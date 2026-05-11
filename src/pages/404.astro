@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromRequest } from '../utils/lang';
+import { ui, defaultLang } from '../i18n/ui';
+
+const lang = getLangFromRequest(Astro);
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+---
+
+<Layout title={`404 - ${t['404.title']}`}>
+  <div class="min-h-[70vh] flex items-center justify-center px-4">
+    <div class="max-w-md w-full text-center">
+      <!-- 404 Illustration / Icon -->
+      <div class="relative mb-8">
+        <div class="text-[10rem] font-black text-gray-50 leading-none select-none">404</div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="bg-gradient-to-br from-blue-500 to-indigo-600 w-24 h-24 rounded-3xl rotate-12 shadow-xl shadow-blue-500/20 flex items-center justify-center">
+            <svg class="w-12 h-12 text-white -rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="text-3xl font-bold text-gray-900 mb-4">{t['404.title']}</h1>
+      <p class="text-gray-500 mb-10 leading-relaxed">
+        {t['404.desc']}
+      </p>
+
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/" class="w-full sm:w-auto bg-gray-900 hover:bg-black text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95">
+          {t['404.back']}
+        </a>
+        <button type="button" id="contact-404-btn" class="w-full sm:w-auto bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-8 py-3 rounded-2xl font-bold transition-all shadow-sm active:scale-95 cursor-pointer">
+          {t['footer.contact']}
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline>
+  document.getElementById('contact-404-btn')?.addEventListener('click', async () => {
+    const email = ['support', '@', 'andrewwangdev.com'].join('');
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(email);
+      } else {
+        const input = document.createElement('input');
+        input.value = email;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      if (window.showToast) {
+        window.showToast(`Email copied: ${email}`, 'success');
+      }
+    } catch (e) {
+      if (window.showToast) {
+        window.showToast(email, 'info');
+      }
+    }
+  });
+</script>
+

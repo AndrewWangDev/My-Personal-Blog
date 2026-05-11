@@ -1,0 +1,625 @@
+---
+import '../styles/global.css';
+import { ui, defaultLang } from '../i18n/ui';
+import { getLangFromRequest } from '../utils/lang';
+import ComplaintModal from '../components/ComplaintModal.astro';
+
+interface Props {
+	title: string;
+	description?: string;
+	ogImage?: string;
+}
+const { title, description, ogImage } = Astro.props;
+
+// Read user state injected by middleware
+const user = Astro.locals.user;
+const isLoggedIn = !!user;
+const isAdmin = user?.role === 'admin';
+
+// Language logic
+const lang = getLangFromRequest(Astro);
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+
+// Semantic lang mapping
+const langMap: Record<string, string> = {
+	'zh': 'zh-CN',
+	'en': 'en-US',
+	'zh-tw': 'zh-TW',
+	'ja': 'ja-JP',
+	'de': 'de-DE'
+};
+const htmlLang = langMap[lang] || 'en-US';
+
+// Default SEO values
+const finalDesc = description || t['seo.home.desc'];
+const finalOgImage = ogImage ? new URL(ogImage, Astro.url).toString() : new URL('/fallback.png', Astro.url).toString();
+
+// Canonical URL (always points to primary domain defined in astro.config.mjs)
+const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+
+// Beta domain / Worker domain blocking logic
+const isBeta = Astro.url.hostname.includes('beta.andrewwangdev.com') || Astro.url.hostname.includes('workers.dev');
+
+// Noindex for specific pages
+const noindexPaths = ['/terms', '/login', '/register', '/privacy'];
+const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
+---
+
+<!doctype html>
+<html lang={htmlLang}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="preconnect" href="https://cdn.andrewwangdev.com" crossorigin />
+		<meta name="generator" content="Astro & Cloudflare" />
+		{(isBeta || isNoindexPage) && <meta name="robots" content="noindex, nofollow" />}
+		<script is:inline>
+      // Ultimate compatibility mode: fix Trusted Types errors under strict security policies
+      if (window.trustedTypes && window.trustedTypes.createPolicy) {
+        const passThrough = (s) => s;
+        const policies = ['default', 'goog#html', 'gsi#html'];
+        policies.forEach(name => {
+          try {
+            if (!window.trustedTypes.getAttribute(name)) {
+              window.trustedTypes.createPolicy(name, {
+                createHTML: passThrough,
+                createScript: passThrough,
+                createScriptURL: passThrough
+              });
+            }
+          } catch (e) {}
+        });
+      }
+
+      // Dark Mode Initialization
+      if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+    <!-- Solve Google login popup communication block with main page (COOP) -->
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
+		
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="canonical" href={canonicalURL} />
+		<link rel="alternate" type="application/rss+xml" title="Andrew Wang Dev RSS Feed" href="/rss.xml" />
+		
+		<title>{title}</title>
+		<meta name="title" content={title} />
+		<meta name="description" content={finalDesc} />
+
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={finalDesc} />
+		<meta property="og:image" content={finalOgImage} />
+
+		<!-- Twitter -->
+		<meta property="twitter:card" content="summary_large_image" />
+		<meta property="twitter:url" content={canonicalURL} />
+		<meta property="twitter:title" content={title} />
+		<meta property="twitter:description" content={finalDesc} />
+		<meta property="twitter:image" content={finalOgImage} />
+	</head>
+	<body class="bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-slate-200 font-sans antialiased">
+		<header id="global-header" class="bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-xl shadow-sm sticky top-0 z-50 border-b border-gray-100 dark:border-slate-800">
+			<div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+				<div class="flex items-center space-x-4 lg:space-x-6 xl:space-x-10 min-w-max">
+					<a href="/" class="text-xl font-bold text-blue-600 tracking-tighter whitespace-nowrap flex-shrink-0">Andrew Wang Dev</a>
+					
+					<nav class="hidden md:flex space-x-4 lg:space-x-6 xl:space-x-8 min-w-max">
+						<a href="/" class={`whitespace-nowrap text-[15px] flex-shrink-0 transition-colors ${Astro.url.pathname === '/' ? 'font-bold text-blue-600 dark:text-blue-400' : 'font-medium text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'}`}>{t['nav.home']}</a>
+						<a href="/resources" class={`whitespace-nowrap text-[15px] flex-shrink-0 transition-colors ${Astro.url.pathname.startsWith('/resources') ? 'font-bold text-blue-600 dark:text-blue-400' : 'font-medium text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'}`}>{t['nav.resources']}</a>
+						<a href="/news" class={`whitespace-nowrap text-[15px] flex-shrink-0 transition-colors ${Astro.url.pathname.startsWith('/news') ? 'font-bold text-blue-600 dark:text-blue-400' : 'font-medium text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'}`}>{t['nav.news']}</a>
+						<a href="/guestbook" class={`whitespace-nowrap text-[15px] flex-shrink-0 transition-colors ${Astro.url.pathname.startsWith('/guestbook') ? 'font-bold text-blue-600 dark:text-blue-400' : 'font-medium text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'}`}>{t['nav.guestbook']}</a>
+						<a href="/about" class={`whitespace-nowrap text-[15px] flex-shrink-0 transition-colors ${Astro.url.pathname.startsWith('/about') ? 'font-bold text-blue-600 dark:text-blue-400' : 'font-medium text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200'}`}>{t['nav.about']}</a>
+					</nav>
+				</div>
+				
+				<div class="flex items-center space-x-2 md:space-x-4 min-w-max">
+					<div class="hidden lg:block relative flex-shrink-0">
+						<input type="text" id="global-search-input" aria-label="Global Search" placeholder={t['search.placeholder']} class="pl-4 pr-12 min-h-[48px] bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-full text-xs font-medium text-gray-700 dark:text-slate-200 placeholder:text-gray-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 w-32 lg:w-36 xl:w-40 transition-all" />
+						<button aria-label="Search" class="absolute right-0 top-0 bottom-0 min-w-[48px] min-h-[48px] flex items-center justify-center cursor-pointer text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-r-full" id="global-search-btn">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </button>
+					</div>
+
+          <div class="flex items-center space-x-1.5 flex-shrink-0">
+            <!-- Dark Mode Switcher -->
+            <button id="theme-toggle" aria-label="Toggle Dark Mode" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center">
+              <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+              <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+            </button>
+
+            <!-- Language Switcher -->
+            <div class="relative" id="lang-trigger">
+              <button aria-label="Change Language" class="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
+                <span class="w-5 h-5 flex items-center justify-center overflow-hidden rounded-sm">
+                  <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                </span>
+              </button>
+              <div id="lang-list" class="absolute right-0 mt-1 w-32 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 py-2 hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                <button aria-label="简体中文" class="lang-opt w-full text-left px-4 py-2.5 text-xs font-light dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-lang="zh">
+                  简体中文
+                </button>
+                <button aria-label="English" class="lang-opt w-full text-left px-4 py-2.5 text-xs font-light dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-lang="en">
+                  English
+                </button>
+                <button aria-label="繁体中文" class="lang-opt w-full text-left px-4 py-2.5 text-xs font-light dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-lang="zh-tw">
+                  繁体中文
+                </button>
+                <button aria-label="日本語" class="lang-opt w-full text-left px-4 py-2.5 text-xs font-light dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-lang="ja">
+                  日本語
+                </button>
+                <button aria-label="Deutsch" class="lang-opt w-full text-left px-4 py-2.5 text-xs font-light dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" data-lang="de">
+                  Deutsch
+                </button>
+              </div>
+            </div>
+
+            <button id="noti-bell" aria-label="Notifications" class="relative p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            </button>
+
+            <a href="/rss.xml" target="_blank" aria-label="RSS Feed" class="p-2 text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors" title="RSS Feed">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 11a9 9 0 019 9M4 4a16 16 0 0116 16M4 20h.01"></path></svg>
+            </a>
+          </div>
+
+					{isLoggedIn ? (
+						isAdmin ? (
+							<a href="/admin" class="hidden sm:flex items-center space-x-1.5 text-xs font-medium bg-gray-900 dark:bg-slate-800 text-white dark:text-slate-200 px-4 py-2 rounded-full hover:bg-gray-800 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition shadow-xl shadow-gray-200 dark:shadow-none whitespace-nowrap flex-shrink-0">
+								<span>{t['nav.admin']}</span>
+							</a>
+						) : (
+							<a href="/account" class="hidden sm:flex items-center space-x-1.5 text-xs font-medium bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 px-4 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-slate-700 transition shadow-sm whitespace-nowrap flex-shrink-0">
+								<span>{t['nav.account']}</span>
+							</a>
+						)
+					) : (
+						<div class="hidden sm:flex items-center space-x-3 flex-shrink-0">
+							<a href="/login" class="text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition uppercase tracking-widest whitespace-nowrap">{t['nav.login']}</a>
+							<a href="/register" class="text-xs font-medium bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition shadow-xl shadow-blue-500/20 uppercase tracking-widest whitespace-nowrap">{t['nav.register']}</a>
+						</div>
+					)}
+
+          <button id="mobile-menu-btn" aria-label="Mobile Menu" class="md:hidden p-2 text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+				</div>
+			</div>
+		</header>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-drawer" class="fixed inset-0 z-[100] bg-gray-900/50 backdrop-blur-sm hidden opacity-0 transition-all duration-300">
+      <div class="absolute right-0 top-0 h-full w-[280px] bg-white dark:bg-slate-900 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
+          <span class="font-bold text-blue-600 text-lg">MENU</span>
+          <button id="close-drawer" aria-label="Close Mobile Menu" class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <nav class="flex-1 p-6 space-y-2">
+          <a href="/" class="block p-3 rounded-xl dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold text-sm">{t['nav.home']}</a>
+          <a href="/resources" class="block p-3 rounded-xl dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold text-sm">{t['nav.resources']}</a>
+          <a href="/news" class="block p-3 rounded-xl dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold text-sm">{t['nav.news']}</a>
+          <a href="/guestbook" class="block p-3 rounded-xl dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold text-sm">{t['nav.guestbook']}</a>
+          <a href="/about" class="block p-3 rounded-xl dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-bold text-sm">{t['nav.about']}</a>
+        </nav>
+        <div class="p-6 border-t border-gray-100 dark:border-slate-800 space-y-4">
+          {!isLoggedIn ? (
+            <div class="grid grid-cols-2 gap-3">
+              <a href="/login" class="flex justify-center py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold uppercase shadow-sm">{t['nav.login']}</a>
+              <a href="/register" class="flex justify-center py-3 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase shadow-md">{t['nav.register']}</a>
+            </div>
+          ) : (
+            <a href={isAdmin ? "/admin" : "/account"} class="flex items-center justify-center space-x-2 py-4 bg-gray-900 dark:bg-slate-800 text-white dark:text-slate-200 rounded-2xl text-xs font-bold uppercase border border-transparent dark:border-slate-700 shadow-xl dark:shadow-none">
+               <span>{isAdmin ? t['nav.admin'] : t['nav.account']}</span>
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+
+		<main class="max-w-6xl mx-auto px-4 py-10 min-h-[calc(100vh-160px)]">
+			<slot />
+		</main>
+
+		<footer class="bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 py-10 transition-colors duration-300">
+			<div class="max-w-6xl mx-auto px-4 text-center">
+				<p class="text-gray-500 dark:text-slate-400 text-sm tracking-wide mb-4">&copy; 2026 Andrew Wang Dev. All rights reserved.</p>
+				<div class="flex justify-center space-x-6 text-sm font-medium text-gray-500 dark:text-slate-400">
+					<a href="/privacy" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t['footer.privacy']}</a>
+					<a href="/terms" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t['footer.terms']}</a>
+					<button type="button" id="footer-contact-btn" aria-label="Contact Support" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-sm font-medium text-gray-500 dark:text-slate-400">{t['footer.contact']}</button>
+					<a href="/rss.xml" target="_blank" class="hover:text-orange-500 dark:hover:text-orange-400 transition-colors">RSS Feed</a>
+					<a href="/sitemap.xml" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Sitemap</a>
+					<a href="/publickey.asc" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">PGP Key</a>
+				</div>
+			</div>
+		</footer>
+
+		<div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center pointer-events-none space-y-2"></div>
+
+		<!-- Search Modal -->
+		<div id="search-modal" class="fixed inset-0 z-[60] flex items-start justify-center pt-24 px-4 hidden opacity-0 transition-all duration-300">
+			<div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" id="search-modal-overlay"></div>
+			<div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 relative z-10 overflow-hidden transform scale-95 transition-all duration-300" id="search-modal-content">
+				<div class="p-6">
+					<div class="flex items-center space-x-4 mb-6">
+						<div class="flex-1 relative">
+							<input type="text" id="modal-search-input" aria-label="Search Input" placeholder={t['search.placeholder']} class="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500/20 text-sm font-medium text-gray-700 dark:text-slate-200 transition-all" />
+							<svg class="w-5 h-5 text-gray-400 absolute left-4 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+						</div>
+						<button class="text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200" id="close-search" aria-label="Close Search">{t['search.cancel']}</button>
+					</div>
+					<div id="search-results-container" class="max-h-[60vh] overflow-y-auto space-y-2">
+						<div class="text-center py-12 text-gray-400 dark:text-slate-500">
+							<p class="text-sm">{t['search.placeholder']}</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Notification Modal -->
+		<div id="noti-modal" class="fixed inset-0 z-[70] flex items-start justify-end pt-20 pr-4 sm:pr-8 hidden opacity-0 transition-all duration-300 pointer-events-none">
+			<div class="absolute inset-0 bg-gray-900/5 dark:bg-gray-900/40 pointer-events-auto" id="noti-overlay"></div>
+			<div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 relative z-10 overflow-hidden transform translate-x-10 transition-all duration-300 pointer-events-auto" id="noti-content">
+				<div class="p-5 border-b border-gray-50 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+					<h3 class="font-bold text-gray-900 dark:text-slate-100">{t['noti.title']}</h3>
+					<button class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200" id="noti-close" aria-label="Close Notifications">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+					</button>
+				</div>
+				<div id="noti-list" class="max-h-[70vh] overflow-y-auto p-2 space-y-2 min-h-[100px]">
+					<div class="text-center py-10 text-gray-400 dark:text-slate-500">
+						<p class="text-sm">{t['noti.loading']}</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Login Required Modal -->
+		<div id="login-req-modal" class="fixed inset-0 z-[80] flex items-center justify-center hidden opacity-0 transition-all duration-300">
+			<div class="absolute inset-0 bg-gray-900/40" id="login-req-overlay"></div>
+			<div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 max-w-xs w-full relative z-10 text-center transform scale-95 transition-all duration-300" id="login-req-content">
+				<div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+				</div>
+				<h3 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-2">{t['login_req.title']}</h3>
+				<p class="text-gray-500 dark:text-slate-400 text-sm mb-6">{t['login_req.desc']}</p>
+				<div class="space-y-3">
+					<a href="/login" class="block w-full bg-blue-600 text-white font-bold py-2.5 rounded-xl hover:bg-blue-700 transition">{t['login_req.btn']}</a>
+					<button class="block w-full text-sm text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 py-1" id="login-req-close">{t['login_req.cancel']}</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Notification Detail Modal -->
+		<div id="noti-detail-modal" class="fixed inset-0 z-[90] flex items-center justify-center hidden opacity-0 transition-all duration-300">
+			<div class="absolute inset-0 bg-gray-900/40" id="noti-detail-overlay"></div>
+			<div class="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 max-w-lg w-full relative z-10 transform scale-95 transition-all duration-300" id="noti-detail-content">
+				<button aria-label="Close Notification Detail" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200" id="noti-detail-close">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+				</button>
+				<h3 class="text-xl font-bold text-gray-900 dark:text-slate-100 mb-4" id="noti-detail-title"></h3>
+				<div class="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-slate-300 max-h-[60vh] overflow-y-auto" id="noti-detail-body"></div>
+				<div class="mt-6 pt-4 border-t border-gray-50 dark:border-slate-800 text-xs text-gray-400" id="noti-detail-time"></div>
+			</div>
+		</div>
+
+		<script define:vars={{ isLoggedIn }}>
+			window.IS_LOGGED_IN = isLoggedIn;
+		</script>
+		<script is:inline define:vars={{ 
+      t_search_loading: t['search.loading'], 
+      t_search_no_results: t['search.no_results'],
+      t_noti_loading: t['noti.loading'],
+      t_noti_empty: t['noti.empty'],
+      t_blog: t['search.type.blog'],
+      t_resource: t['search.type.resource'],
+      t_news: t['search.type.news']
+    }}>
+			function escapeHtml(str) {
+				if (!str) return '';
+				return String(str)
+					.replace(/&/g, '&amp;')
+					.replace(/</g, '&lt;')
+					.replace(/>/g, '&gt;')
+					.replace(/"/g, '&quot;')
+					.replace(/'/g, '&#039;');
+			}
+
+			// Toast Notification
+			window.showToast = function(message, type = 'info') {
+				const container = document.getElementById('toast-container');
+				if(!container) return;
+				const toast = document.createElement('div');
+				let bgClass = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-rose-500' : 'bg-gray-800');
+				toast.className = `flex items-center px-5 py-3 rounded-full shadow-lg text-white text-sm font-bold transition-all duration-300 transform -translate-y-4 opacity-0 ${bgClass}`;
+				const textSpan = document.createElement('span');
+				textSpan.textContent = message;
+				toast.appendChild(textSpan);
+				container.appendChild(toast);
+				requestAnimationFrame(() => toast.classList.remove('-translate-y-4', 'opacity-0'));
+				setTimeout(() => {
+					toast.classList.add('opacity-0', '-translate-y-4');
+					setTimeout(() => toast.remove(), 300);
+				}, 3000);
+			};
+
+			// Search Logic
+			const searchInput = document.getElementById('global-search-input');
+			const searchBtn = document.getElementById('global-search-btn');
+			const searchModal = document.getElementById('search-modal');
+			const modalInput = document.getElementById('modal-search-input');
+			const resultsContainer = document.getElementById('search-results-container');
+
+			function debounce(fn, ms) {
+				let timeoutId;
+				return function(...args) {
+					clearTimeout(timeoutId);
+					timeoutId = setTimeout(() => fn.apply(this, args), ms);
+				};
+			}
+
+			const debouncedSearch = debounce(performSearch, 500);
+
+			function openSearch(q = '') {
+				searchModal.classList.remove('hidden');
+				setTimeout(() => {
+					searchModal.classList.remove('opacity-0');
+					document.getElementById('search-modal-content').classList.remove('scale-95');
+					if(q) { modalInput.value = q; performSearch(q); }
+					modalInput.focus();
+				}, 10);
+			}
+
+			function closeSearch() {
+				searchModal.classList.add('opacity-0');
+				document.getElementById('search-modal-content').classList.add('scale-95');
+				setTimeout(() => searchModal.classList.add('hidden'), 300);
+			}
+
+			async function performSearch(q) {
+				if(!q) return;
+				resultsContainer.innerHTML = `<p class="text-center py-4 text-gray-400 dark:text-slate-500 text-xs">${t_search_loading}</p>`;
+				try {
+					const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+					const data = await res.json();
+					if(data.success && data.results.length > 0) {
+						resultsContainer.innerHTML = data.results.map(r => {
+							const typeLabel = r.type === 'blog' ? t_blog : (r.type === 'resource' ? t_resource : t_news);
+							const typeColor = r.type === 'blog' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : (r.type === 'resource' ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400');
+							const link = r.type === 'blog' ? '/blog/'+r.id : (r.type==='resource'?'/resources/'+r.id:'/news/'+r.id);
+							return `
+								<a href="${link}" class="group block p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 rounded-2xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-slate-700 mb-2">
+									<div class="flex items-center justify-between mb-2">
+										<span class="text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${typeColor}">${typeLabel}</span>
+										<svg class="w-4 h-4 text-gray-300 dark:text-slate-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+									</div>
+									<div class="text-sm font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">${escapeHtml(r.name)}</div>
+									<div class="text-xs text-gray-400 dark:text-slate-400 line-clamp-2">${escapeHtml(r.summary || '')}</div>
+								</a>
+							`;
+						}).join('');
+					} else {
+						resultsContainer.innerHTML = `
+						<div class="text-center py-12">
+							<p class="text-gray-400 dark:text-slate-500 text-sm">${t_search_no_results}</p>
+						</div>
+					`;
+					}
+				} catch(e) { console.error(e); }
+			}
+
+			searchInput?.addEventListener('keydown', e => e.key === 'Enter' && openSearch(e.target.value));
+			searchBtn?.addEventListener('click', () => openSearch(searchInput.value));
+			document.getElementById('close-search')?.addEventListener('click', closeSearch);
+			document.getElementById('search-modal-overlay')?.addEventListener('click', closeSearch);
+			modalInput?.addEventListener('input', e => debouncedSearch(e.target.value));
+
+			// Notification Logic
+			const bell = document.getElementById('noti-bell');
+			const notiModal = document.getElementById('noti-modal');
+			const notiList = document.getElementById('noti-list');
+			
+			bell?.addEventListener('click', async () => {
+				if(!window.IS_LOGGED_IN) {
+					document.getElementById('login-req-modal').classList.remove('hidden');
+					setTimeout(() => document.getElementById('login-req-modal').classList.remove('opacity-0'), 10);
+					return;
+				}
+				notiModal.classList.remove('hidden');
+				setTimeout(() => {
+					notiModal.classList.remove('opacity-0');
+					document.getElementById('noti-content').classList.remove('translate-x-10');
+				}, 10);
+				
+				notiList.innerHTML = `
+					<div class="text-center py-10 text-gray-400">
+						<p class="text-sm">${t_noti_loading}</p>
+					</div>
+				`;
+				try {
+					const res = await fetch('/api/notifications');
+					const data = await res.json();
+					if(data.success && data.notifications.length > 0) {
+						notiList.innerHTML = data.notifications.map(n => `
+							<div onclick="showDetail(${n.id})" class="p-3 bg-gray-50 dark:bg-slate-800/50 rounded-xl cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-700/50 border border-transparent dark:border-slate-700/50 transition-colors">
+								<div class="text-sm font-bold text-gray-900 dark:text-slate-100">${escapeHtml(n.title)}</div>
+								<div class="text-[10px] text-gray-400 dark:text-slate-500 mt-1">${new Date(n.created_at).toLocaleDateString()}</div>
+							</div>
+						`).join('');
+						window.allNotis = data.notifications;
+					} else {
+						notiList.innerHTML = `<p class="text-center py-10 text-gray-400 text-xs">${t_noti_empty}</p>`;
+					}
+				} catch(e) {}
+			});
+
+			window.showDetail = function(id) {
+				const n = window.allNotis.find(x => x.id === id);
+				if(!n) return;
+				document.getElementById('noti-detail-title').textContent = n.title;
+				document.getElementById('noti-detail-body').textContent = n.content;
+				document.getElementById('noti-detail-time').textContent = new Date(n.created_at).toLocaleString();
+				document.getElementById('noti-detail-modal').classList.remove('hidden');
+				setTimeout(() => document.getElementById('noti-detail-modal').classList.remove('opacity-0'), 10);
+			};
+
+			document.getElementById('noti-detail-close')?.addEventListener('click', () => {
+				document.getElementById('noti-detail-modal').classList.add('opacity-0');
+				setTimeout(() => document.getElementById('noti-detail-modal').classList.add('hidden'), 300);
+			});
+			
+			document.getElementById('noti-detail-overlay')?.addEventListener('click', () => {
+				document.getElementById('noti-detail-modal').classList.add('opacity-0');
+				setTimeout(() => document.getElementById('noti-detail-modal').classList.add('hidden'), 300);
+			});
+
+			document.getElementById('noti-close')?.addEventListener('click', () => {
+				notiModal.classList.add('opacity-0');
+				document.getElementById('noti-content').classList.add('translate-x-10');
+				setTimeout(() => notiModal.classList.add('hidden'), 300);
+			});
+
+			const loginReqModal = document.getElementById('login-req-modal');
+			const closeLoginReq = () => {
+				loginReqModal.classList.add('opacity-0');
+				setTimeout(() => loginReqModal.classList.add('hidden'), 300);
+			};
+			document.getElementById('login-req-close')?.addEventListener('click', closeLoginReq);
+			document.getElementById('login-req-overlay')?.addEventListener('click', closeLoginReq);
+
+			// Mobile Menu Logic
+			const menuBtn = document.getElementById('mobile-menu-btn');
+			const drawer = document.getElementById('mobile-drawer');
+			const closeDrawer = document.getElementById('close-drawer');
+			
+			menuBtn?.addEventListener('click', () => {
+				drawer.classList.remove('hidden');
+				setTimeout(() => {
+					drawer.classList.remove('opacity-0');
+					drawer.querySelector('div').classList.remove('translate-x-full');
+				}, 10);
+			});
+
+			function hideDrawer() {
+				drawer.classList.add('opacity-0');
+				drawer.querySelector('div').classList.add('translate-x-full');
+				setTimeout(() => drawer.classList.add('hidden'), 300);
+			}
+
+			closeDrawer?.addEventListener('click', hideDrawer);
+			drawer?.addEventListener('click', e => e.target === drawer && hideDrawer());
+
+      // Lang Switcher Logic
+      const langTrigger = document.getElementById('lang-trigger');
+      const langList = document.getElementById('lang-list');
+      
+      langTrigger?.addEventListener('mouseenter', () => {
+        langList.classList.remove('hidden');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!langTrigger.contains(e.target)) {
+          langList.classList.add('hidden');
+        }
+      });
+
+      document.querySelectorAll('.lang-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const l = btn.getAttribute('data-lang');
+          document.cookie = `lang=${l}; path=/; max-age=31536000`;
+          location.reload();
+        });
+      });
+
+      // Dark Mode Switcher Logic
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+      const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+      if (themeToggleBtn && themeToggleDarkIcon && themeToggleLightIcon) {
+        if (document.documentElement.classList.contains('dark')) {
+          themeToggleLightIcon.classList.remove('hidden');
+        } else {
+          themeToggleDarkIcon.classList.remove('hidden');
+        }
+
+        themeToggleBtn.addEventListener('click', function() {
+          themeToggleDarkIcon.classList.toggle('hidden');
+          themeToggleLightIcon.classList.toggle('hidden');
+
+          const theme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+          document.documentElement.classList.add('transition-colors', 'duration-300');
+          if (theme === 'light') {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
+          } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('color-theme', 'dark');
+          }
+          setTimeout(() => {
+            document.documentElement.classList.remove('transition-colors', 'duration-300');
+          }, 300);
+        });
+      }
+
+      // Back to Top Button Logic
+      const backToTopBtn = document.getElementById('back-to-top');
+      if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 300) {
+            backToTopBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+          } else {
+            backToTopBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+          }
+        });
+        backToTopBtn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      // Footer Contact Anti-Crawler Handler
+      document.getElementById('footer-contact-btn')?.addEventListener('click', async () => {
+        const email = ['support', '@', 'andrewwangdev.com'].join('');
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(email);
+          } else {
+            const input = document.createElement('input');
+            input.value = email;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+          }
+          if (window.showToast) {
+            window.showToast(`Email copied: ${email}`, 'success');
+          }
+        } catch (e) {
+          if (window.showToast) {
+            window.showToast(email, 'info');
+          }
+        }
+      });
+		</script>
+    <script define:vars={{ complaintSuccessMsg: t['complaint.success'], complaintLimitMsg: t['complaint.limit'] }}>
+      window.__complaint_success = complaintSuccessMsg;
+      window.__complaint_limit = complaintLimitMsg;
+    </script>
+    <ComplaintModal lang={lang} />
+    <button id="back-to-top" aria-label="Back to top" class="fixed bottom-8 right-8 p-3 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700 shadow-md hover:shadow-lg border border-gray-100 dark:border-slate-700 rounded-full transition-all duration-300 opacity-0 pointer-events-none translate-y-4 z-50 group">
+      <svg class="w-5 h-5 group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </button>
+  </body>
+</html>

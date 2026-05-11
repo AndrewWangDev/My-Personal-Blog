@@ -1,0 +1,365 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromRequest } from '../utils/lang';
+import { ui, defaultLang } from '../i18n/ui';
+
+const lang = getLangFromRequest(Astro);
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+
+const i18n = {
+  sending: lang === 'zh' ? '正在发送...' : 'Sending...',
+  get_code: t['auth.send_code'],
+  submitting: lang === 'zh' ? '正在提交...' : 'Submitting...',
+  register_btn: t['auth.register_btn'],
+  network_error: lang === 'zh' ? '网络连接异常，请重试' : 'Network error, please try again',
+  email_prefix_error: lang === 'zh' ? '请先输入邮箱前缀' : 'Please enter email prefix first',
+  turnstile_hint_resend: lang === 'zh' ? '请再次完成人机验证以提交注册' : 'Please complete Turnstile again to submit',
+  google_verifying: lang === 'zh' ? '正在验证 Google 账号...' : 'Verifying Google account...',
+  google_success: lang === 'zh' ? 'Google 注册成功！正在进入系统...' : 'Google signup successful! Entering system...',
+  google_failed: lang === 'zh' ? 'Google 注册失败' : 'Google signup failed',
+  server_error: lang === 'zh' ? '身份验证服务器响应异常' : 'Authentication server error',
+  register_success: lang === 'zh' ? '注册成功！正在跳转...' : 'Registration successful! Redirecting...',
+  pwd_strength: t['account.pwd_strength'],
+  str_labels: [
+    t['account.str_1'],
+    t['account.str_2'],
+    t['account.str_3'],
+    t['account.str_4'],
+    t['account.str_5']
+  ]
+};
+---
+
+<Layout title={`${t['auth.register_title']} - Andrew.Dev`}>
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script is:inline src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <div id="errorModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-gray-900/40 backdrop-blur-sm transition-opacity">
+    <div class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-200" id="errorModalContent">
+      <div class="flex items-center mb-4">
+        <svg class="w-6 h-6 text-red-500 dark:text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100">{t['auth.tip']}</h3>
+      </div>
+      <p id="errorModalText" class="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-6 break-words"></p>
+      <div class="text-right">
+        <button id="closeModalBtn" class="bg-blue-600 text-white px-5 py-2 text-sm font-medium rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          {t['auth.ok']}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-md mx-auto mt-10 bg-white dark:bg-slate-900 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800">
+    <h1 class="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-slate-100">{t['auth.create_account']}</h1>
+    
+    <div id="success-message" class="hidden bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium p-3 rounded-md mb-5 text-sm border border-green-200 dark:border-green-900/50"></div>
+
+    <form id="registerForm" class="space-y-5">
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t['auth.email']} *</label>
+        <div class="flex items-center space-x-2">
+          <input type="text" id="emailPrefix" aria-label="Email Prefix" required class="flex-1 px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100" />
+          <span class="text-gray-500 dark:text-slate-400 font-bold">@</span>
+          <select id="emailDomain" aria-label="Email Domain" class="w-[140px] px-2 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-slate-700 text-gray-900 dark:text-slate-100 cursor-pointer text-sm">
+            <option value="gmail.com">gmail.com</option>
+            <option value="outlook.com">outlook.com</option>
+            <option value="yahoo.com">yahoo.com</option>
+            <option value="hotmail.com">hotmail.com</option>
+            <option value="icloud.com">icloud.com</option>
+            <option value="proton.me">proton.me</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t['auth.verify_code']} *</label>
+        <div class="flex space-x-2">
+          <input type="text" name="verify_code" aria-label="Verification Code" required placeholder={t['auth.code_placeholder']} class="flex-1 px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100" />
+          <button type="button" id="sendCodeBtn" disabled class="px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 text-sm font-bold rounded-md cursor-not-allowed transition-colors whitespace-nowrap min-w-[100px]">
+            {t['auth.send_code']}
+          </button>
+        </div>
+        <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-1" id="turnstile-hint">{lang === 'zh' ? '请先完成下方人机验证以开启发送' : 'Please complete Turnstile below to enable sending'}</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t['auth.username']} *</label>
+        <input type="text" name="username" aria-label="Username" required placeholder={t['auth.username_placeholder']} class="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t['auth.password']} *</label>
+        <input type="password" name="password" id="reg-password" aria-label="Password" required placeholder={t['auth.pwd_tip']} class="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100" />
+        <div class="mt-2">
+          <div class="flex gap-1 h-1.5">
+            <div id="str-bar-1" class="flex-1 rounded-full bg-gray-200 transition-colors duration-300"></div>
+            <div id="str-bar-2" class="flex-1 rounded-full bg-gray-200 transition-colors duration-300"></div>
+            <div id="str-bar-3" class="flex-1 rounded-full bg-gray-200 transition-colors duration-300"></div>
+            <div id="str-bar-4" class="flex-1 rounded-full bg-gray-200 transition-colors duration-300"></div>
+            <div id="str-bar-5" class="flex-1 rounded-full bg-gray-200 transition-colors duration-300"></div>
+          </div>
+          <p id="str-label" class="text-xs mt-1 text-gray-400 dark:text-slate-500 transition-colors"></p>
+        </div>
+      </div>
+
+
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <input id="terms" name="terms" aria-label="Agree to Terms" type="checkbox" required class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 dark:border-slate-700 rounded cursor-pointer bg-white dark:bg-slate-800">
+        </div>
+        <div class="ml-3 text-xs">
+          <label for="terms" class="text-gray-500 dark:text-slate-400 cursor-pointer">
+            {t['auth.terms_agree_prefix']}
+            <a href="/terms" class="text-blue-600 dark:text-blue-400 hover:underline">{t['auth.terms']}</a>
+            {t['auth.terms_agree_and']}
+            <a href="/privacy" class="text-blue-600 dark:text-blue-400 hover:underline">{t['auth.privacy']}</a>
+          </label>
+        </div>
+      </div>
+
+      <div class="cf-turnstile mt-2" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired"></div>
+
+      <button type="submit" id="submitBtn" class="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 mt-6 shadow-sm hover:shadow-md">
+        {t['auth.register_btn']}
+      </button>
+
+      <div class="text-center mt-4 text-sm text-gray-600 dark:text-slate-400">
+        {t['auth.has_account']} <a href="/login" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">{t['auth.login_title']}</a>
+      </div>
+
+      <div class="mt-6 flex items-center justify-between">
+        <hr class="w-full border-gray-200 dark:border-slate-800" />
+        <span class="p-2 text-gray-400 dark:text-slate-500 text-xs">OR</span>
+        <hr class="w-full border-gray-200 dark:border-slate-800" />
+      </div>
+
+      <div 
+        id="g_id_onload"
+        data-client_id={import.meta.env.PUBLIC_GOOGLE_CLIENT_ID}
+        data-callback="handleCredentialResponse"
+        data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin mt-4 flex justify-center"
+        data-type="standard"
+        data-size="large"
+        data-theme="outline"
+        data-text="signup_with"
+        data-shape="rectangular"
+        data-logo_alignment="left"
+        data-width="384">
+      </div>
+
+      <div class="mt-3">
+        <!-- GitHub Register Button -->
+        <a href="/api/auth/github" class="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-gray-900 hover:bg-black text-white dark:bg-slate-800 dark:hover:bg-slate-700 text-sm font-semibold rounded-md border border-transparent shadow-sm transition-all duration-200">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          <span>{t['auth.register_with_github'] || t['auth.login_with_github'] || '通过 GitHub 账号快速注册'}</span>
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <script is:inline define:vars={{ i18n }}>
+    function calcStrength(pw) {
+      let score = 0;
+      if (!pw) return 0;
+      if (pw.length >= 6) score++;
+      if (pw.length >= 10) score++;
+      if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+      if (/\d/.test(pw)) score++;
+      if (/[^a-zA-Z0-9]/.test(pw)) score++;
+      return Math.min(score, 5);
+    }
+    const strColors = ['', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4'];
+    const regPwInput = document.getElementById('reg-password');
+    if (regPwInput) {
+      regPwInput.addEventListener('input', () => {
+        const s = calcStrength(regPwInput.value);
+        for (let i = 1; i <= 5; i++) {
+          const bar = document.getElementById('str-bar-' + i);
+          bar.style.backgroundColor = i <= s ? strColors[s] : '#e5e7eb';
+        }
+        const label = document.getElementById('str-label');
+        label.textContent = s > 0 ? i18n.pwd_strength + i18n.str_labels[s-1] : '';
+        label.style.color = strColors[s] || '#9ca3af';
+      });
+    }
+
+    const form = document.getElementById('registerForm');
+    const successDiv = document.getElementById('success-message');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const errorModal = document.getElementById('errorModal');
+    const errorModalContent = document.getElementById('errorModalContent');
+    const errorModalText = document.getElementById('errorModalText');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    function showError(msg) {
+      errorModalText.innerText = msg;
+      errorModal.classList.remove('hidden');
+      setTimeout(() => { errorModalContent.classList.replace('scale-95', 'scale-100'); }, 10);
+    }
+
+    closeModalBtn.addEventListener('click', () => {
+      errorModalContent.classList.replace('scale-100', 'scale-95');
+      setTimeout(() => { errorModal.classList.add('hidden'); }, 200);
+    });
+
+    const sendCodeBtn = document.getElementById('sendCodeBtn');
+    let cooldown = 0;
+    let turnstileToken = '';
+
+    window.onTurnstileSuccess = function(token) {
+      turnstileToken = token;
+      sendCodeBtn.disabled = false;
+      sendCodeBtn.classList.remove('bg-gray-100', 'dark:bg-slate-800', 'text-gray-400', 'dark:text-slate-500', 'cursor-not-allowed');
+      sendCodeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white', 'shadow-sm');
+      document.getElementById('turnstile-hint').classList.add('hidden');
+    };
+
+    window.onTurnstileExpired = function() {
+      turnstileToken = '';
+      sendCodeBtn.disabled = true;
+      sendCodeBtn.classList.add('bg-gray-100', 'dark:bg-slate-800', 'text-gray-400', 'dark:text-slate-500', 'cursor-not-allowed');
+      sendCodeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white', 'shadow-sm');
+      document.getElementById('turnstile-hint').classList.remove('hidden');
+    };
+    
+    sendCodeBtn.addEventListener('click', async () => {
+      if (cooldown > 0 || !turnstileToken) return;
+      
+      const emailPrefix = document.getElementById('emailPrefix').value;
+      const emailDomain = document.getElementById('emailDomain').value;
+      if (!emailPrefix) {
+        showError(i18n.email_prefix_error);
+        return;
+      }
+      
+      const email = emailPrefix + '@' + emailDomain;
+      
+      sendCodeBtn.disabled = true;
+      sendCodeBtn.innerText = i18n.sending;
+      
+      try {
+        const res = await fetch('/api/auth/send-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, turnstileResponse: turnstileToken })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+          cooldown = 60;
+          const timer = setInterval(() => {
+            cooldown--;
+            if (cooldown <= 0) {
+              clearInterval(timer);
+              sendCodeBtn.disabled = false;
+              sendCodeBtn.innerText = i18n.get_code;
+              sendCodeBtn.classList.remove('opacity-50');
+            } else {
+              sendCodeBtn.innerText = `${cooldown}s`;
+            }
+          }, 1000);
+          sendCodeBtn.classList.add('opacity-50');
+          if (typeof turnstile !== 'undefined') {
+            turnstile.reset();
+            onTurnstileExpired();
+            document.getElementById('turnstile-hint').innerText = i18n.turnstile_hint_resend;
+            document.getElementById('turnstile-hint').classList.remove('hidden');
+          }
+        } else {
+          showError(data.error);
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.innerText = i18n.get_code;
+          if (data.error?.includes('人机验证')) {
+            turnstile.reset();
+            onTurnstileExpired();
+          }
+        }
+      } catch (e) {
+        showError(i18n.network_error);
+        sendCodeBtn.disabled = false;
+        sendCodeBtn.innerText = i18n.get_code;
+      }
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      submitBtn.disabled = true;
+      submitBtn.innerText = i18n.submitting;
+      submitBtn.classList.add('opacity-70');
+
+      const emailPrefix = document.getElementById('emailPrefix').value;
+      const emailDomain = document.getElementById('emailDomain').value;
+      const fullEmail = emailPrefix + '@' + emailDomain;
+
+      const formData = new FormData(form);
+      formData.set('email', fullEmail);
+      formData.set('cf-turnstile-response', turnstileToken);
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          form.classList.add('hidden');
+          successDiv.innerText = i18n.register_success;
+          successDiv.classList.remove('hidden');
+          setTimeout(() => { window.location.href = '/login'; }, 2000);
+        } else {
+          showError(result.error);
+          if (typeof turnstile !== 'undefined') turnstile.reset();
+        }
+      } catch (err) {
+        showError(i18n.network_error);
+        if (typeof turnstile !== 'undefined') turnstile.reset();
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = i18n.register_btn;
+        submitBtn.classList.remove('opacity-70');
+      }
+    });
+
+    window.handleCredentialResponse = async (response) => {
+      submitBtn.disabled = true;
+      submitBtn.innerText = i18n.google_verifying;
+
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+          form.classList.add('hidden');
+          successDiv.innerText = i18n.google_success;
+          successDiv.classList.remove('hidden');
+          setTimeout(() => { window.location.href = '/'; }, 1000);
+        } else {
+          showError(result.error || i18n.google_failed);
+        }
+      } catch (err) {
+        showError(i18n.server_error);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = i18n.register_btn;
+      }
+    };
+
+    // Handle OAuth Callback errors in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error')) {
+      showError(decodeURIComponent(urlParams.get('error')));
+      history.replaceState(null, '', window.location.pathname);
+    }
+  </script>
+</Layout>

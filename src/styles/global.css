@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@media print {
+  #global-header,
+  header.sticky,
+  footer,
+  #back-to-top,
+  #toast-container,
+  #search-modal,
+  #noti-modal,
+  #mobile-drawer,
+  .no-print {
+    display: none !important;
+  }
+}

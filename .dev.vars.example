@@ -1,0 +1,45 @@
+# ==============================================================================
+# Cloudflare Workers Local Development Secrets (.dev.vars.example)
+#
+# Instructions:
+# 1. For local development with `wrangler dev`:
+#    Copy this file to `.dev.vars`:
+#    cp .dev.vars.example .dev.vars
+# 2. For production deployment on Cloudflare:
+#    Add these secrets via Cloudflare Dashboard (Settings -> Variables and Secrets)
+#    or via CLI: `npx wrangler secret put <VARIABLE_NAME>`
+# ==============================================================================
+
+# Cloudflare Turnstile Server-Side Secret Key
+# Used to verify user CAPTCHA tokens during login, register, and complaint submissions.
+TURNSTILE_SECRET_KEY=0x4AAAAAAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Resend API Key
+# Used to send email verification codes for account registration.
+# Obtained from: https://resend.com/api-keys
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# GitHub OAuth App Credentials
+# Obtained from: GitHub -> Settings -> Developer settings -> OAuth Apps
+GITHUB_CLIENT_ID=your_github_client_id
+GITHUB_CLIENT_SECRET=your_github_client_secret
+
+# Internal Cron Secret Token
+# Used to authenticate scheduled automated ingestion requests (e.g. daily news fetcher).
+CRON_SECRET=your_custom_cron_secret_key_2026
+
+# Google Gemini API Key
+# Used by `scripts/fetch-daily-news.mjs` to summarize and rewrite daily technology news.
+# Obtained from: Google AI Studio (https://aistudio.google.com/)
+GEMINI_API_KEY=AIzaxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# OpenAI API Key (Optional fallback for news ingestion)
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Base Website URL
+SITE_URL=https://andrewwangdev.com
+
+# Session Signing Secret (HMAC-SHA256)
+# Used to cryptographically sign and verify user_session cookies against tampering and hijacking.
+# Generate a strong 32+ character random string (e.g., openssl rand -hex 32)
+SESSION_SECRET=your_super_secret_session_signing_key_32bytes_or_more

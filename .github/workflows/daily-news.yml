@@ -1,0 +1,28 @@
+name: Daily Tech & AI News Ingestion
+
+on:
+  schedule:
+    # Runs at 00:00 UTC (08:00 AM Beijing Time) every day
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  fetch-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Daily News Fetcher
+        env:
+          SITE_URL: 'https://andrewwangdev.com'
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          node scripts/fetch-daily-news.mjs

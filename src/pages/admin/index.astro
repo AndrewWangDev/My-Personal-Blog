@@ -1,0 +1,890 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getLangFromRequest } from '../../utils/lang';
+import { ui, defaultLang } from '../../i18n/ui';
+
+const lang = getLangFromRequest(Astro);
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+---
+
+<Layout title="Admin Dashboard | Andrew Wang Dev">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row min-h-[80vh] gap-8 relative">
+    
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 flex-shrink-0">
+      <div class="md:sticky md:top-24 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-2 md:p-4 flex md:flex-col overflow-x-auto md:overflow-x-visible space-x-2 md:space-x-0 md:space-y-1 no-scrollbar scroll-smooth">
+        <nav class="flex md:flex-col space-x-1.5 md:space-x-0 md:space-y-1 w-full min-w-max md:min-w-0">
+          <button id="tab-resources" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_resources']}</span>
+          </button>
+          <button id="tab-showcase" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_showcase']}</span>
+          </button>
+          <button id="tab-news" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_news']}</span>
+          </button>
+          <button id="tab-blog" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_blog']}</span>
+          </button>
+          <button id="tab-guestbook" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_guestbook']}</span>
+          </button>
+          <button id="tab-notifications" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_notifications']}</span>
+          </button>
+          <button id="tab-users" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_users']}</span>
+          </button>
+          <button id="tab-restrictions" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_restrictions']}</span>
+          </button>
+          <button id="tab-complaints" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_complaints']}</span>
+          </button>
+          <button id="tab-settings" class="flex-1 md:flex-none flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><circle cx="12" cy="12" r="3" stroke-width="2"></circle></svg>
+            <span class="whitespace-nowrap">{t['admin.tab_settings']}</span>
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+  
+  <script define:vars={{ adminI18n: JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k]) => k.startsWith('admin.')))) }}>
+    window.__ADMIN_I18N__ = JSON.parse(adminI18n);
+  </script>
+  <script is:inline>
+      (function() {
+        try {
+          const savedTab = localStorage.getItem('admin_tab') || 'resources';
+          if (savedTab !== 'resources') {
+            const tRes = document.getElementById('tab-resources');
+            if (tRes) {
+              tRes.classList.remove('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-400', 'font-bold');
+              tRes.classList.add('text-gray-600', 'hover:bg-gray-50', 'dark:text-slate-400', 'dark:hover:bg-slate-800', 'font-medium');
+            }
+            const tTgt = document.getElementById('tab-' + savedTab);
+            if (tTgt) {
+              tTgt.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-400', 'font-bold');
+              tTgt.classList.remove('text-gray-600', 'hover:bg-gray-50', 'dark:text-slate-400', 'dark:hover:bg-slate-800', 'font-medium');
+            }
+          }
+        } catch(e) {}
+      })();
+    </script>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 md:p-8">
+      <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+        <div>
+          <h1 id="page-title" class="text-2xl font-bold text-black dark:text-white">{t['admin.title_resources']}</h1>
+          <p id="page-subtitle" class="text-sm text-gray-500 dark:text-slate-400 mt-1">{t['admin.sub_resources']}</p>
+        </div>
+        <button id="btn-create" aria-label="Create Button" class="flex items-center space-x-2 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white font-bold py-2.5 px-5 rounded-xl shadow-md transition-all active:scale-95 text-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <span id="btn-create-text">{t['admin.create_resource']}</span>
+        </button>
+      </div>
+
+      <!-- 数据表 -->
+      <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-800">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-slate-800 text-sm">
+          <thead class="bg-gray-50 dark:bg-slate-800/50">
+            <tr id="table-header">
+              <th scope="col" class="px-6 py-4 text-left font-semibold text-gray-600 dark:text-slate-300">ID</th>
+              <th scope="col" class="px-6 py-4 text-left font-semibold text-gray-600 dark:text-slate-300">{t['admin.col_name']}</th>
+              <th scope="col" class="px-6 py-4 text-left font-semibold text-gray-600 dark:text-slate-300">{t['admin.col_author']}</th>
+              <th scope="col" class="px-6 py-4 text-left font-semibold text-gray-600 dark:text-slate-300">{t['admin.col_created_at']}</th>
+              <th scope="col" class="px-6 py-4 text-right font-semibold text-gray-600 dark:text-slate-300">{t['admin.col_actions']}</th>
+            </tr>
+          </thead>
+          <tbody id="data-table-body" class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
+            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 dark:text-slate-500">{t['admin.loading']}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <!-- Modal Form (Hidden by default) -->
+    <div id="data-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm modal-overlay"></div>
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 w-full max-w-3xl max-h-[90vh] overflow-y-auto relative z-10 transform scale-95 transition-transform duration-300 modal-content">
+        <div class="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex justify-between items-center z-20">
+          <h2 id="modal-title" class="text-xl font-bold text-black dark:text-white">{t['admin.modal_new_resource']}</h2>
+          <button aria-label="Close Modal" class="modal-close text-gray-400 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-300 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        
+        <form id="data-form" class="p-6 space-y-6">
+          <input type="hidden" id="form-id" name="id" />
+          
+          <div id="form-fields-container" class="space-y-6">
+             <!-- Fields will be dynamically injected here -->
+          </div>
+
+          <div class="flex justify-end gap-3 pt-2">
+            <button type="button" class="modal-close px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">{t['admin.btn_cancel']}</button>
+            <button type="submit" id="btn-submit" class="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 dark:bg-blue-500 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 shadow-md transition-colors">{t['admin.btn_save']}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <script define:vars={{ adminI18n: JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k]) => k.startsWith('admin.')))) }}>
+    window.__ADMIN_I18N__ = JSON.parse(adminI18n);
+  </script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const i18n = window.__ADMIN_I18N__ || {};
+      let currentTab = localStorage.getItem('admin_tab') || 'resources'; // Default or saved
+      let currentData = [];
+
+      const tbody = document.getElementById('data-table-body');
+      const tableHeader = document.getElementById('table-header');
+      const modal = document.getElementById('data-modal');
+      const modalContent = modal.querySelector('.modal-content');
+      const form = document.getElementById('data-form');
+      const formContainer = document.getElementById('form-fields-container');
+      let usersList = [];
+      async function fetchUsers() {
+        if(usersList.length > 0) return usersList;
+        try {
+          const res = await fetch('/api/admin/users');
+          const data = await res.json();
+          if(data.success) usersList = data.users;
+        } catch(e) {}
+        return usersList;
+      }
+
+      const modalTitle = document.getElementById('modal-title');
+      const pageTitle = document.getElementById('page-title');
+      const pageSubtitle = document.getElementById('page-subtitle');
+      const btnCreateText = document.getElementById('btn-create-text');
+
+      const tabResources = document.getElementById('tab-resources');
+      const tabShowcase = document.getElementById('tab-showcase');
+      const tabNews = document.getElementById('tab-news');
+      const tabBlog = document.getElementById('tab-blog');
+      const tabGuestbook = document.getElementById('tab-guestbook');
+      const tabNotifications = document.getElementById('tab-notifications');
+      const tabUsers = document.getElementById('tab-users');
+      const tabRestrictions = document.getElementById('tab-restrictions');
+      const tabSettings = document.getElementById('tab-settings');
+      const tabComplaints = document.getElementById('tab-complaints');
+      const allTabs = [tabResources, tabShowcase, tabNews, tabBlog, tabGuestbook, tabNotifications, tabUsers, tabRestrictions, tabSettings, tabComplaints];
+      const btnCreate = document.getElementById('btn-create');
+
+      function activateTab(activeBtn) {
+        allTabs.forEach(t => { 
+          t.classList.remove('bg-blue-50','text-blue-700','dark:bg-blue-900/30','dark:text-blue-400','font-bold'); 
+          t.classList.add('text-gray-600','hover:bg-gray-50','dark:text-slate-400','dark:hover:bg-slate-800','font-medium'); 
+        });
+        activeBtn.classList.add('bg-blue-50','text-blue-700','dark:bg-blue-900/30','dark:text-blue-400','font-bold');
+        activeBtn.classList.remove('text-gray-600','hover:bg-gray-50','dark:text-slate-400','dark:hover:bg-slate-800','font-medium');
+      }
+
+      function switchTab(tab) {
+        currentTab = tab;
+        localStorage.setItem('admin_tab', tab);
+        const configs = {
+          resources: { btn: tabResources, title: i18n['admin.title_resources'], sub: i18n['admin.sub_resources'], create: i18n['admin.create_resource'], showCreate: true,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">ID</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_name']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_author']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_created_at']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          showcase: { btn: tabShowcase, title: i18n['admin.title_showcase'], sub: i18n['admin.sub_showcase'], create: i18n['admin.create_showcase'], showCreate: true,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">ID</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_preview']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_link']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_order']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          news: { btn: tabNews, title: i18n['admin.title_news'], sub: i18n['admin.sub_news'], create: i18n['admin.create_news'], showCreate: true,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">ID</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_news_title']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_author']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_published_at']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          blog: { btn: tabBlog, title: i18n['admin.title_blog'], sub: i18n['admin.sub_blog'], create: i18n['admin.create_blog'], showCreate: true,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">ID</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_title']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_author']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_published_at']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          guestbook: { btn: tabGuestbook, title: i18n['admin.title_guestbook'], sub: i18n['admin.sub_guestbook'], create: '', showCreate: false,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">ID</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_user']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_content']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_time']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          notifications: { btn: tabNotifications, title: i18n['admin.title_notifications'], sub: i18n['admin.sub_notifications'], create: i18n['admin.create_notification'], showCreate: true,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">ID</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_title']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_target_user']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_time']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          users: { btn: tabUsers, title: i18n['admin.title_users'], sub: i18n['admin.sub_users'], create: '', showCreate: false,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_username']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_email']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_role']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_registered_at']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          restrictions: { btn: tabRestrictions, title: i18n['admin.title_restrictions'], sub: i18n['admin.sub_restrictions'], create: i18n['admin.create_restriction'], showCreate: true,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_email']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_expires_at']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_status']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600" colspan="2">${i18n['admin.col_actions']}</th>` },
+          settings: { btn: tabSettings, title: i18n['admin.title_settings'], sub: i18n['admin.sub_settings'], create: '', showCreate: false,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_setting_name']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_current_value']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` },
+          complaints: { btn: tabComplaints, title: i18n['admin.title_complaints'], sub: i18n['admin.sub_complaints'], create: '', showCreate: false,
+            headers: `<th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_complaint_content']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_reporter']}</th><th class="px-6 py-4 text-left font-semibold text-gray-600">${i18n['admin.col_status']}</th><th class="px-6 py-4 text-right font-semibold text-gray-600">${i18n['admin.col_actions']}</th>` }
+        };
+        const c = configs[tab];
+        activateTab(c.btn);
+        pageTitle.textContent = c.title;
+        pageSubtitle.textContent = c.sub;
+        btnCreateText.textContent = c.create;
+        btnCreate.style.display = c.showCreate ? '' : 'none';
+        tableHeader.innerHTML = c.headers;
+        if(tab === 'notifications') fetchUsers();
+        loadData();
+      }
+
+      tabResources.addEventListener('click', () => switchTab('resources'));
+      tabShowcase.addEventListener('click', () => switchTab('showcase'));
+      tabNews.addEventListener('click', () => switchTab('news'));
+      tabBlog.addEventListener('click', () => switchTab('blog'));
+      tabGuestbook.addEventListener('click', () => switchTab('guestbook'));
+      tabNotifications.addEventListener('click', () => switchTab('notifications'));
+      tabUsers.addEventListener('click', () => switchTab('users'));
+      tabRestrictions.addEventListener('click', () => switchTab('restrictions'));
+      tabSettings.addEventListener('click', () => switchTab('settings'));
+      tabComplaints.addEventListener('click', () => switchTab('complaints'));
+
+      // Fetch and render data
+      async function loadData() {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 dark:text-slate-500">${i18n['admin.loading']}</td></tr>`;
+        try {
+          const urls = { resources: '/api/admin/resources', showcase: '/api/admin/showcase', news: '/api/admin/news', blog: '/api/admin/blog', guestbook: '/api/admin/guestbook', notifications: '/api/admin/notifications', users: '/api/admin/users', restrictions: '/api/admin/restrictions', settings: '/api/admin/settings', complaints: '/api/admin/complaints' };
+          const res = await fetch(urls[currentTab]);
+          const data = await res.json();
+          if(data.success || data.complaints) {
+            currentData = data.resources || data.showcase || data.news || data.posts || data.messages || data.notifications || data.users || data.restrictions || data.complaints || (data.settings ? Object.entries(data.settings).map(([k, v]) => ({ key: k, value: v })) : []);
+            renderTable(currentData);
+          } else {
+            if(window.showToast) window.showToast(i18n['admin.msg_load_failed'], 'error');
+          }
+        } catch(e) {
+          console.error(e);
+          if(window.showToast) window.showToast(i18n['admin.msg_network_error'], 'error');
+        }
+      }
+
+      function renderTable(list) {
+        if(list.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400 dark:text-slate-500">${i18n['admin.no_data']}</td></tr>`;
+          return;
+        }
+        let html = '';
+        list.forEach(item => {
+          if (currentTab === 'guestbook') {
+            const timeStr = new Date(item.created_at).toLocaleString('zh-CN');
+            const statusBadge = item.is_deleted ? `<span class="text-xs text-red-400">${i18n['admin.badge_deleted']}</span>` : '';
+            const preview = (item.content || '').substring(0, 60) + (item.content && item.content.length > 60 ? '...' : '');
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
+              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm whitespace-nowrap">${item.username || i18n['admin.deactivated_user']}</td>
+              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm max-w-[250px] truncate">${statusBadge}${preview}</td>
+              <td class="px-6 py-4 text-gray-500 dark:text-slate-400 text-xs whitespace-nowrap">${timeStr}</td>
+              <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                ${!item.is_deleted ? `<button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_edit']}</button>` : ``}
+                ${!item.is_deleted ? `<button class="btn-delete text-red-500 hover:text-red-700" data-id="${item.id}">${i18n['admin.btn_delete']}</button>` : ''}
+              </td></tr>`;
+          } else if (currentTab === 'notifications') {
+            const timeStr = new Date(item.created_at).toLocaleString('zh-CN');
+            const targetStr = item.target_user_id ? `<span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">UID: ${'....' + String(item.target_user_id).slice(-6)} (${item.target_username || i18n['admin.unknown']})</span>` : `<span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">${i18n['admin.broadcast']}</span>`;
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
+              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm max-w-[200px] truncate" title="${item.title}">${item.title}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${targetStr}</td>
+              <td class="px-6 py-4 text-gray-500 dark:text-slate-400 text-xs whitespace-nowrap">${timeStr}</td>
+              <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                <button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_edit']}</button>
+                <button class="btn-delete text-red-500 hover:text-red-700" data-id="${item.id}">${i18n['admin.btn_delete']}</button>
+              </td></tr>`;
+          } else if (currentTab === 'users') {
+            const timeStr = new Date(item.created_at).toLocaleDateString('zh-CN');
+            const roleBadge = item.role === 'admin' ? `<span class="whitespace-nowrap px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">${i18n['admin.role_admin']}</span>` : `<span class="whitespace-nowrap px-2 py-0.5 bg-gray-100 text-gray-600 dark:text-slate-300 rounded-full text-xs">${i18n['admin.role_user']}</span>`;
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 font-bold text-black dark:text-white whitespace-nowrap">${item.username}</td>
+              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm whitespace-nowrap">${item.email}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${roleBadge}</td>
+              <td class="px-6 py-4 text-gray-500 dark:text-slate-400 text-xs whitespace-nowrap">${timeStr}</td>
+              <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                <button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_edit']}</button>
+                ${item.role !== 'admin' ? `<button class="btn-delete text-red-500 hover:text-red-700" data-id="${item.id}">${i18n['admin.btn_deactivate']}</button>` : ''}
+              </td></tr>`;
+          } else if (currentTab === 'restrictions') {
+            const exp = new Date(item.expires_at);
+            const now = new Date();
+            const isActive = exp > now;
+            const statusBadge = isActive ? `<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-bold">${i18n['admin.status_active']}</span>` : `<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">${i18n['admin.status_expired']}</span>`;
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm">${item.email}</td>
+              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm">${exp.toLocaleString('zh-CN')}</td>
+              <td class="px-6 py-4">${statusBadge}</td>
+              <td class="px-6 py-4 text-sm font-medium">
+                <div class="flex flex-wrap justify-end gap-3">
+                  <button class="btn-edit-r text-blue-600 hover:text-blue-900" data-email="${item.email}" data-expires="${item.expires_at}">${i18n['admin.btn_modify_time']}</button>
+                  <button class="btn-delete-r text-red-500 hover:text-red-700" data-email="${item.email}">${i18n['admin.btn_remove_restriction']}</button>
+                </div>
+              </td></tr>`;
+          } else if (currentTab === 'showcase') {
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
+              <td class="px-6 py-4"><img src="${item.image_url}" alt="Admin Resource Thumbnail" class="w-20 h-10 object-cover rounded shadow-sm border border-gray-100"></td>
+              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm truncate max-w-[150px]">${item.link_url}</td>
+              <td class="px-6 py-4 text-black dark:text-white font-bold text-sm">${item.display_order}</td>
+              <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                <button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_edit']}</button>
+                <button class="btn-delete text-red-500 hover:text-red-700" data-id="${item.id}">${i18n['admin.btn_delete']}</button>
+              </td></tr>`;
+          } else if (currentTab === 'settings') {
+            const labels = {
+              email_monthly_limit: i18n['admin.setting_monthly_limit'],
+              email_daily_limit: i18n['admin.setting_daily_limit'],
+              email_hourly_limit: i18n['admin.setting_hourly_limit'],
+              email_user_daily_limit: i18n['admin.setting_user_daily_limit'],
+              email_domain_daily_limit: i18n['admin.setting_domain_daily_limit'],
+              max_user_complaints_daily: i18n['admin.setting_user_complaints_daily'],
+              max_total_complaints_daily: i18n['admin.setting_total_complaints_daily']
+            };
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 font-bold text-black dark:text-white text-sm">${labels[item.key] || item.key}</td>
+              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 font-mono text-sm">${item.value}</td>
+              <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                <button class="btn-edit-setting text-blue-600 hover:text-blue-900" data-key="${item.key}" data-value="${item.value}" data-label="${labels[item.key] || item.key}">${i18n['admin.btn_modify']}</button>
+              </td></tr>`;
+          } else if (currentTab === 'complaints') {
+            const reasonMap = {
+              r1: 'Copyright Infringement / DMCA Violation',
+              r2: 'Privacy Violation & Doxing',
+              r3: 'Strictly Illegal & Dangerous Content',
+              r4: 'Community Abuse, Fraud & Spam',
+              r5: i18n['admin.complaint_other']
+            };
+            const mappedReason = reasonMap[item.reason] || item.reason;
+            const timeStr = new Date(item.created_at).toLocaleDateString('zh-CN');
+            const statusBadge = item.status === 'resolved' ? `<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">${i18n['admin.status_resolved']}</span>` : `<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">${i18n['admin.form_status_pending']}</span>`;
+            const userDeletedBadge = item.is_deleted ? `<span class="text-xs text-red-500 font-bold ml-2">${i18n['admin.user_withdrawn']}</span>` : '';
+            const details = (item.details || '').replace(/</g, '&lt;').substring(0, 50) + '...';
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-bold text-black dark:text-white text-sm mb-1">${mappedReason}${userDeletedBadge}</div>
+                <div class="text-xs text-gray-500 dark:text-slate-400 truncate max-w-[200px]">${details}</div>
+                <div class="text-[10px] text-blue-500 mt-1">${item.target_type} #${item.target_id}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-black dark:text-white">${item.username || i18n['admin.unknown_user']}</div>
+                <div class="text-[10px] text-gray-500">${item.email || ''}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                ${statusBadge}
+                <div class="text-[10px] text-gray-400 mt-1">${timeStr}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_process']}</button>
+                <button class="btn-delete text-red-500 hover:text-red-700" data-id="${item.id}">${i18n['admin.btn_delete']}</button>
+              </td></tr>`;
+          } else {
+            const timeStr = new Date(item.created_at).toLocaleDateString('zh-CN');
+            const title = item.name || item.title;
+            const summary = item.summary || (item.content ? item.content.substring(0, 50) + '...' : '');
+            html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
+              <td class="px-6 py-4 whitespace-nowrap"><div class="font-bold text-black dark:text-white truncate max-w-[200px]">${title}</div><div class="text-xs text-gray-400 dark:text-slate-500 max-w-[200px] truncate">${summary}</div></td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-slate-300">${item.author || 'Andrew Wang'}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-slate-400 text-xs">${timeStr}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_edit']}</button>
+                <button class="btn-delete text-red-500 hover:text-red-700" data-id="${item.id}">${i18n['admin.btn_delete']}</button>
+              </td></tr>`;
+          }
+        });
+        tbody.innerHTML = html;
+        attachTableEvents();
+      }
+
+      function attachTableEvents() {
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            if (currentTab === 'users') {
+              const item = currentData.find(r => r.id === id);
+              if(item) openModal(item);
+            } else {
+              const numId = parseInt(id);
+              const item = currentData.find(r => r.id === numId);
+              if(item) openModal(item);
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            let confirmMsg, url;
+            if (currentTab === 'users') {
+              confirmMsg = i18n['admin.confirm_deactivate_user'];
+              url = `/api/admin/users/${id}`;
+            } else if (currentTab === 'resources') {
+              confirmMsg = i18n['admin.confirm_delete_resource'];
+              url = `/api/admin/resources/${id}`;
+            } else if (currentTab === 'blog') {
+              confirmMsg = i18n['admin.confirm_delete_post'];
+              url = `/api/admin/blog/${id}`;
+            } else if (currentTab === 'guestbook') {
+              confirmMsg = i18n['admin.confirm_delete_message'];
+              url = `/api/admin/guestbook/${id}`;
+            } else if (currentTab === 'showcase') {
+              confirmMsg = i18n['admin.confirm_delete_showcase'];
+              url = `/api/admin/showcase/${id}`;
+            } else if (currentTab === 'notifications') {
+              confirmMsg = i18n['admin.confirm_delete_notification'];
+              url = `/api/admin/notifications/${id}`;
+            } else if (currentTab === 'complaints') {
+              confirmMsg = i18n['admin.confirm_delete_complaint'];
+              url = `/api/admin/complaints?id=${id}`;
+            } else {
+              confirmMsg = i18n['admin.confirm_delete_news'];
+              url = `/api/admin/news/${id}`;
+            }
+            if(confirm(confirmMsg)) {
+              try {
+                const res = await fetch(url, { method: 'DELETE' });
+                const data = await res.json();
+                if(data.success) { if(window.showToast) window.showToast(i18n['admin.msg_success'], 'success'); loadData(); }
+                else { if(window.showToast) window.showToast(data.error || i18n['admin.msg_failed'], 'error'); }
+              } catch(err) { if(window.showToast) window.showToast(i18n['admin.msg_network_error'], 'error'); }
+            }
+          });
+        });
+
+        // Restriction-specific buttons
+        document.querySelectorAll('.btn-edit-r').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const email = e.currentTarget.getAttribute('data-email');
+            const expires = e.currentTarget.getAttribute('data-expires');
+            const newDate = prompt(i18n['admin.prompt_new_expiry'], expires);
+            if (newDate) {
+              fetch(`/api/admin/restrictions/${encodeURIComponent(email)}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ expires_at: newDate })
+              }).then(r => r.json()).then(d => {
+                if(d.success) { if(window.showToast) window.showToast(i18n['admin.msg_time_updated'], 'success'); loadData(); }
+                else { if(window.showToast) window.showToast(d.error || i18n['admin.msg_update_failed'], 'error'); }
+              }).catch(() => { if(window.showToast) window.showToast(i18n['admin.msg_network_error'], 'error'); });
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-delete-r').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const email = e.currentTarget.getAttribute('data-email');
+            if(confirm(i18n['admin.confirm_remove_restriction'].replace('{email}', email))) {
+              try {
+                const res = await fetch(`/api/admin/restrictions/${encodeURIComponent(email)}`, { method: 'DELETE' });
+                const data = await res.json();
+                if(data.success) { if(window.showToast) window.showToast(i18n['admin.msg_restriction_removed'], 'success'); loadData(); }
+                else { if(window.showToast) window.showToast(data.error || i18n['admin.msg_failed'], 'error'); }
+              } catch(err) { if(window.showToast) window.showToast(i18n['admin.msg_network_error'], 'error'); }
+            }
+          });
+        });
+
+        // Settings edit
+        document.querySelectorAll('.btn-edit-setting').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const key = e.currentTarget.getAttribute('data-key');
+            const value = e.currentTarget.getAttribute('data-value');
+            const label = e.currentTarget.getAttribute('data-label');
+            const newValue = prompt(i18n['admin.prompt_modify_setting'].replace('{label}', label), value);
+            if (newValue !== null && newValue !== value) {
+              fetch('/api/admin/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ settings: { [key]: newValue } })
+              }).then(r => r.json()).then(d => {
+                if(d.success) { if(window.showToast) window.showToast(i18n['admin.msg_settings_updated'], 'success'); loadData(); }
+                else { if(window.showToast) window.showToast(d.error || i18n['admin.msg_update_failed'], 'error'); }
+              }).catch(() => { if(window.showToast) window.showToast(i18n['admin.msg_network_error'], 'error'); });
+            }
+          });
+        });
+      }
+
+      async function injectFormFields(item) {
+        if(currentTab === 'resources') {
+          formContainer.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_project_name']} <span class="text-red-500">*</span></label>
+                <input type="text" name="name" value="${item ? (item.name||'') : ''}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_author']}</label>
+                <input type="text" name="author" value="${item ? (item.author||'') : ''}" placeholder="${i18n['admin.form_default_author']}" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_logo_url']}</label>
+                <input type="url" name="logo_url" value="${item ? (item.logo_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_cover_url']}</label>
+                <input type="url" name="cover_image_url" value="${item ? (item.cover_image_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_summary']} <span class="text-red-500">*</span></label>
+              <input type="text" name="summary" value="${item ? (item.summary||'') : ''}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_details']}</label>
+              <textarea name="details" rows="5" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-none">${item ? (item.details||'') : ''}</textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_tags']}</label>
+              <input type="text" name="tags" value='${item ? (item.tags||'') : ''}' placeholder='${i18n['admin.form_tags_example']}' class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-mono">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 border-b border-gray-100">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_github_url']}</label>
+                <input type="url" name="github_url" value="${item ? (item.github_url||'') : ''}" placeholder="https://github.com/..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_download_url']}</label>
+                <input type="url" name="download_url" value="${item ? (item.download_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+            </div>
+          `;
+        } else if (currentTab === 'showcase') {
+          const ic = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm';
+          formContainer.innerHTML = `
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_image_url']} <span class="text-red-500">*</span></label>
+                <input type="url" name="image_url" value="${item ? (item.image_url||'') : ''}" required placeholder="https://..." class="${ic}">
+                <p class="text-[10px] text-gray-400 mt-1">${i18n['admin.form_image_hint']}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_link_url']} <span class="text-red-500">*</span></label>
+                <input type="url" name="link_url" value="${item ? (item.link_url||'') : ''}" required placeholder="https://..." class="${ic}">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_display_order']}</label>
+                <input type="number" name="display_order" value="${item ? (item.display_order||0) : 0}" class="${ic}">
+              </div>
+            </div>
+          `;
+        } else if (currentTab === `news`) {
+          formContainer.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_news_title']} <span class="text-red-500">*</span></label>
+                <input type="text" name="title" value="${item ? (item.title||'') : ''}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_author']}</label>
+                <input type="text" name="author" value="${item ? (item.author||'') : ''}" placeholder="${i18n['admin.form_default_author']}" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_thumbnail_url']}</label>
+                <input type="url" name="thumbnail_url" value="${item ? (item.thumbnail_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_cover_large_url']}</label>
+                <input type="url" name="cover_url" value="${item ? (item.cover_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+            </div>
+
+            <div class="pb-4 border-b border-gray-100">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_news_content']} <span class="text-red-500">*</span></label>
+              <textarea name="content" required rows="12" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-y font-mono">${item ? (item.content||'') : ''}</textarea>
+            </div>
+          `;
+        } else if (currentTab === 'blog') {
+          const ic = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm';
+          formContainer.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_title']} <span class="text-red-500">*</span></label>
+                <input type="text" name="title" value="${item ? (item.title||'') : ''}" required class="${ic}">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_author']}</label>
+                <input type="text" name="author" value="${item ? (item.author||'') : ''}" placeholder="${i18n['admin.form_default_author']}" class="${ic}">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_thumbnail']}</label>
+              <input type="url" name="thumbnail_url" value="${item ? (item.thumbnail_url||'') : ''}" placeholder="https://raw.githubusercontent.com/..." class="${ic}">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_summary']}</label>
+              <input type="text" name="summary" value="${item ? (item.summary||'') : ''}" class="${ic}">
+            </div>
+            <div class="pb-4 border-b border-gray-100">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_content']} <span class="text-red-500">*</span></label>
+              <textarea name="content" required rows="12" class="${ic} resize-y font-mono">${item ? (item.content||'') : ''}</textarea>
+            </div>
+          `;
+        } else if (currentTab === 'notifications') {
+          const users = await fetchUsers();
+          const ic = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm';
+          
+          const usersHtml = users.map(u => `
+            <label class="flex items-center p-3 hover:bg-white rounded-xl cursor-pointer transition-all border border-transparent hover:border-blue-100 hover:shadow-sm group">
+              <input type="checkbox" name="target_user_id" value="${u.id}" ${item && item.target_user_id === u.id ? 'checked' : ''} class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+              <div class="ml-3">
+                <div class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">${u.username}</div>
+                <div class="text-[10px] text-gray-400 font-mono">${u.email} (ID: ${u.id})</div>
+              </div>
+            </label>
+          `).join('');
+
+          formContainer.innerHTML = `
+            <div class="space-y-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_notif_title']} <span class="text-red-500">*</span></label>
+                <input type="text" name="title" value="${item ? (item.title||'') : ''}" required class="${ic}">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_notif_summary']}</label>
+                <input type="text" name="summary" value="${item ? (item.summary||'') : ''}" placeholder="${i18n['admin.form_notif_placeholder']}" class="${ic}">
+              </div>
+              <div class="p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                <label class="flex items-center space-x-2 mb-4 cursor-pointer">
+                  <input type="checkbox" id="check-all-users" ${item && !item.target_user_id ? 'checked' : (!item ? 'checked' : '')} class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                  <span class="text-sm font-bold text-blue-800">${i18n['admin.form_broadcast_all']}</span>
+                </label>
+                <div id="uid-input-wrapper" class="${item && !item.target_user_id ? 'hidden' : (!item ? 'hidden' : '')}">
+                  <label class="block text-xs font-bold text-blue-700 mb-3 flex items-center">
+                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path></svg>
+                    ${i18n['admin.form_select_users']}
+                  </label>
+                  <div class="max-h-[240px] overflow-y-auto space-y-1 pr-2 custom-scrollbar bg-white/50 p-2 rounded-xl border border-blue-100/30">
+                    ${usersHtml || `<p class="text-xs text-center py-4 text-gray-400">${i18n['admin.form_no_other_users']}</p>`}
+                  </div>
+                </div>
+              </div>
+              <div class="pb-4 border-b border-gray-100">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_notif_content']} <span class="text-red-500">*</span></label>
+                <textarea name="content" required rows="10" class="${ic} resize-y font-mono">${item ? (item.content||'') : ''}</textarea>
+              </div>
+            </div>
+          `;
+          const checkAll = document.getElementById('check-all-users');
+          const uidWrap = document.getElementById('uid-input-wrapper');
+          checkAll.addEventListener('change', () => {
+            uidWrap.classList.toggle('hidden', checkAll.checked);
+            if(checkAll.checked) {
+              uidWrap.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
+            }
+          });
+        } else if (currentTab === 'guestbook') {
+          const ic = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm';
+          formContainer.innerHTML = `
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_message_content']} <span class="text-red-500">*</span></label>
+              <textarea name="content" required rows="6" class="${ic} resize-y">${item ? (item.content||'') : ''}</textarea>
+            </div>
+          `;
+        } else if (currentTab === 'users') {
+          const ic = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm';
+          formContainer.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_username']}</label>
+                <input type="text" value="${item ? (item.username||'') : ''}" disabled class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_email']}</label>
+                <input type="email" name="email" value="${item ? (item.email||'') : ''}" class="${ic}">
+              </div>
+            </div>
+            <div class="pt-4 border-t border-gray-100">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_reset_password']}</label>
+              <input type="password" name="newPassword" placeholder="${i18n['admin.form_new_password_placeholder']}" class="${ic}">
+              <p class="text-xs text-gray-400 mt-1">${i18n['admin.form_password_hint']}</p>
+            </div>
+          `;
+        } else if (currentTab === 'restrictions') {
+          const ic = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm';
+          formContainer.innerHTML = `
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_restricted_email']} <span class="text-red-500">*</span></label>
+              <input type="email" name="email" value="${item ? (item.email||'') : ''}" required ${item ? 'disabled class="w-full px-4 py-2.5 bg-gray-200 text-gray-500 border border-gray-200 rounded-xl cursor-not-allowed text-sm"' : `class="${ic}"`}>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_expires_at']} <span class="text-red-500">*</span></label>
+              <input type="datetime-local" name="expires_at" value="${item ? (item.expires_at||'').replace(' ','T').substring(0,16) : ''}" required class="${ic}">
+            </div>
+          `;
+        } else if (currentTab === 'complaints') {
+          const reasonMap = {
+            r1: 'Copyright Infringement / DMCA Violation',
+            r2: 'Privacy Violation & Doxing',
+            r3: 'Strictly Illegal & Dangerous Content',
+            r4: 'Community Abuse, Fraud & Spam',
+            r5: i18n['admin.complaint_other']
+          };
+          const mappedReason = item ? (reasonMap[item.reason] || item.reason) : '';
+          let targetUrl = '';
+          if(item) {
+            if(item.target_type === 'blog') targetUrl = `/blog/${item.target_id}`;
+            else if(item.target_type === 'resource') targetUrl = `/resources/${item.target_id}`;
+            else if(item.target_type === 'news') targetUrl = `/news/${item.target_id}`;
+            if(targetUrl) targetUrl = window.location.origin + targetUrl;
+          }
+          const ic = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm';
+          formContainer.innerHTML = `
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_target_url']}</label>
+              <div class="px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-700 rounded-xl text-sm">
+                ${targetUrl ? `<a href="${targetUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline break-all">${targetUrl}</a>` : `<span class="text-gray-500 dark:text-slate-400">${i18n['admin.form_none']}</span>`}
+              </div>
+            </div>
+            <div class="mt-4">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_complaint_reason']}</label>
+              <input type="text" value="${mappedReason}" disabled class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_complaint_details']}</label>
+              <textarea disabled rows="3" class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm resize-y">${item ? (item.details||'') : ''}</textarea>
+            </div>
+            <hr class="my-6 border-gray-100 dark:border-slate-800">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_process_status']} <span class="text-red-500">*</span></label>
+              <select name="status" required class="${ic}">
+                <option value="pending" ${item && item.status === 'pending' ? 'selected' : ''}>${i18n['admin.form_status_pending']}</option>
+                <option value="resolved" ${item && item.status === 'resolved' ? 'selected' : ''}>${i18n['admin.form_status_resolved']}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_admin_reply']}</label>
+              <textarea name="result" rows="4" class="${ic} resize-y">${item ? (item.result||'') : ''}</textarea>
+            </div>
+          `;
+        }
+      }
+
+      // Modal management
+      async function openModal(item = null) {
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          modal.classList.remove('opacity-0');
+          modalContent.classList.remove('scale-95');
+        });
+
+        await injectFormFields(item);
+        
+        const titles = { resources: [i18n['admin.create_resource'],i18n['admin.modal_edit_resource']], showcase: [i18n['admin.create_showcase'],i18n['admin.modal_edit_showcase']], news: [i18n['admin.create_news'],i18n['admin.modal_edit_news']], blog: [i18n['admin.create_blog'],i18n['admin.modal_edit_blog']], guestbook: ['',i18n['admin.modal_edit_message']], notifications: [i18n['admin.create_notification'],i18n['admin.modal_edit_notification']], users: ['',i18n['admin.modal_edit_user']], restrictions: [i18n['admin.create_restriction'],i18n['admin.modal_edit_restriction']], complaints: ['',i18n['admin.modal_process_complaint']] };
+        if(item) {
+          modalTitle.textContent = titles[currentTab][1];
+          form.elements['id'].value = item.id || item.email || '';
+        } else {
+          modalTitle.textContent = titles[currentTab][0];
+          form.elements['id'].value = '';
+        }
+      }
+
+      function closeModal() {
+        modal.classList.add('opacity-0');
+        modalContent.classList.add('scale-95');
+        setTimeout(() => {
+          modal.classList.add('hidden');
+        }, 300);
+      }
+
+      document.getElementById('btn-create').addEventListener('click', () => openModal());
+      document.querySelectorAll('.modal-close, .modal-overlay').forEach(el => {
+        el.addEventListener('click', closeModal);
+      });
+
+      // Form Submission
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btnSubmit = document.getElementById('btn-submit');
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = i18n['admin.btn_saving'];
+
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        const id = payload.id;
+        delete payload.id; // remove from body if creating
+        
+        if(currentTab === 'resources' && payload.tags) {
+          try { JSON.parse(payload.tags); } 
+          catch(err) {
+            if(window.showToast) window.showToast(i18n['admin.msg_invalid_tags'], 'error');
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = i18n['admin.btn_save'];
+            return;
+          }
+        }
+
+        let method, url;
+        if (currentTab === 'users') {
+          method = 'PUT';
+          url = `/api/admin/users/${id}`;
+        } else if (currentTab === 'guestbook') {
+          method = 'PUT';
+          url = `/api/admin/guestbook/${id}`;
+        } else if (currentTab === 'restrictions') {
+          if (id) { method = 'PUT'; url = `/api/admin/restrictions/${encodeURIComponent(id)}`; }
+          else { method = 'POST'; url = '/api/admin/restrictions'; payload.expires_at = payload.expires_at ? payload.expires_at.replace('T',' ') + ':00' : ''; }
+        } else if (currentTab === 'complaints') {
+          method = 'PUT';
+          url = '/api/admin/complaints';
+          payload.id = id;
+        } else if (currentTab === 'notifications') {
+          method = id ? 'PUT' : 'POST';
+          url = id ? `/api/admin/notifications/${id}` : '/api/admin/notifications';
+          if(document.getElementById('check-all-users').checked) {
+            payload.target_user_id = null;
+          } else {
+            payload.target_user_id = formData.getAll('target_user_id');
+            if(payload.target_user_id.length === 0 && !id) {
+               if(window.showToast) window.showToast(i18n['admin.msg_select_user'], 'error');
+               btnSubmit.disabled = false;
+               btnSubmit.textContent = i18n['admin.btn_save'];
+               return;
+            }
+            // If editing, only take the first one (or keep it as it is)
+            if(id) payload.target_user_id = payload.target_user_id[0];
+          }
+        } else {
+          method = id ? 'PUT' : 'POST';
+          const baseUrls = { resources: '/api/admin/resources', showcase: '/api/admin/showcase', news: '/api/admin/news', blog: '/api/admin/blog' };
+          const baseUrl = baseUrls[currentTab] || '/api/admin/resources';
+          url = id ? `${baseUrl}/${id}` : baseUrl;
+        }
+
+        try {
+          const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if(data.success) {
+            if(window.showToast) window.showToast(id ? i18n['admin.msg_update_success'] : i18n['admin.msg_create_success'], 'success');
+            closeModal();
+            loadData();
+          } else {
+            if(window.showToast) window.showToast(data.error || i18n['admin.msg_save_failed'], 'error');
+          }
+        } catch(err) {
+          if(window.showToast) window.showToast(i18n['admin.msg_network_error'], 'error');
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = i18n['admin.btn_save'];
+        }
+      });
+
+      // Init
+      switchTab(currentTab);
+    });
+  </script>
+</Layout>
