@@ -1,0 +1,549 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Technical Stack Definition
+const techStack = [
+  {
+    category: 'Edge & Cloud',
+    skills: ['Cloudflare Workers', 'Hono', 'Vercel', 'WebAssembly', 'Node.js', 'Prisma', 'AWS']
+  },
+  {
+    category: 'AI & Model',
+    skills: ['ONNX', 'WebGPU', 'PyTorch', 'Intent Recognition', 'Route Scheduling', 'Agent Dev']
+  },
+  {
+    category: 'Systems',
+    skills: ['Linux', 'Embedded Systems (STM32, Raspberry Pi)', 'Keil', 'Arduino IDE']
+  }
+];
+
+// Education Coursework
+const coursework = [
+  { name: 'Machine Learning', score: '92/100' },
+  { name: 'Cloud Computing', score: '90/100' },
+  { name: 'Database Design', score: '95/100' },
+  { name: 'Computer Architecture', score: '95/100' },
+  { name: 'Advanced Mathematics', score: '98/100' }
+];
+---
+
+<Layout 
+  title="About | Andrew Wang Dev"
+  description="Independent Full-Stack Developer specializing in Edge-Native Computing, AI Orchestration, and System Architecture."
+>
+  <div class="about-container max-w-[880px] mx-auto px-2 sm:px-4 space-y-6 sm:space-y-8 pb-12">
+    
+    <!-- 1. Header (Identity & Action Bar) -->
+    <section class="about-card about-card-hero bg-white dark:bg-[#0B0F19] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm transition-colors duration-200 print-break-inside-avoid">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        
+        <!-- Left: Identity & Availability -->
+        <div class="space-y-3">
+          <div>
+            <h1 class="about-hero-name text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 font-sans tracking-tight">
+              Andrew Wang Dev
+            </h1>
+            <p class="about-hero-title text-sm sm:text-base font-medium text-slate-600 dark:text-slate-400 mt-1">
+              Independent Full-Stack Developer
+            </p>
+          </div>
+
+          <!-- Availability Status Badge -->
+          <div class="about-avail-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 shadow-sm">
+            <span class="relative flex h-2 w-2 no-print">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>Available for 2026 Remote Internships</span>
+          </div>
+        </div>
+
+        <!-- Right: Actions & Social Links (Hidden on Print) -->
+        <div class="flex flex-col items-start md:items-end gap-3.5 no-print">
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Print / Save PDF -->
+            <button 
+              id="btn-print"
+              type="button"
+              aria-label="Print or Save PDF"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm active:scale-95"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+              <span>📄 Print / Save PDF</span>
+            </button>
+
+            <!-- Copy Email (Anti-crawler protected) -->
+            <button 
+              id="btn-copy-email"
+              type="button"
+              aria-label="Copy email address"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-sm active:scale-95 group"
+            >
+              <svg id="copy-email-icon" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span id="copy-email-text">Copy Email</span>
+            </button>
+          </div>
+
+          <!-- Minimalist Social Links -->
+          <div class="flex items-center gap-3 text-xs font-mono text-slate-500 dark:text-slate-400">
+            <a 
+              href="https://github.com/AndrewWangDev" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-200 transition-colors py-0.5"
+            >
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path>
+              </svg>
+              <span>GitHub</span>
+            </a>
+            <span class="text-slate-300 dark:text-slate-700">•</span>
+            <a 
+              href="https://www.linkedin.com/in/andrew-wang-swjtu" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-0.5"
+            >
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 23.2 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+              <span>LinkedIn</span>
+            </a>
+            <span class="text-slate-300 dark:text-slate-700">•</span>
+            <a 
+              href="https://x.com/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-200 transition-colors py-0.5"
+            >
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+              <span>Twitter</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. Technical Stack (Compact Web Tag Layout) -->
+    <section class="about-card bg-white dark:bg-[#0B0F19] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm transition-colors duration-200 print-break-inside-avoid">
+      <div class="about-sec-header flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-4 mb-5">
+        <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <span class="text-indigo-500">//</span> Technical Stack
+        </h2>
+        <span class="text-[11px] font-mono text-slate-400 dark:text-slate-500 no-print">Core Proficiencies</span>
+      </div>
+
+      <div class="space-y-4 print:space-y-1.5">
+        {techStack.map(stack => (
+          <div class="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 py-1 print:py-0.5">
+            <div class="w-32 sm:w-36 flex-shrink-0 text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 print:text-[7.5pt] print:w-24">
+              {stack.category}
+            </div>
+            <div class="flex flex-wrap gap-2 print:gap-1 flex-1">
+              {stack.skills.map(skill => (
+                <span class="about-badge px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-slate-100 dark:bg-slate-800/70 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- 3. Featured Projects (Visual Highlight Area) -->
+    <section class="space-y-6 print:space-y-2">
+      <div class="flex items-center justify-between px-1 print:hidden">
+        <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+          <span class="text-indigo-500">//</span> Featured Projects
+        </h2>
+        <span class="text-[11px] font-mono text-slate-400 dark:text-slate-500">Production Systems</span>
+      </div>
+
+      <!-- Project 1: NanoMesh -->
+      <article class="about-card bg-white dark:bg-[#0B0F19] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all duration-300 relative group print-break-inside-avoid">
+        <div class="about-sec-header flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800/80 pb-4 mb-5">
+          <h3 class="about-project-title text-lg sm:text-xl font-bold font-mono text-slate-900 dark:text-slate-100 flex flex-wrap items-baseline gap-2">
+            <span>NanoMesh</span>
+            <span class="text-xs font-mono font-normal text-slate-500 dark:text-slate-400 print:text-[7.5pt]">
+              (Edge-Native AI Orchestration System)
+            </span>
+          </h3>
+          <a 
+            href="https://nano.andrewwangdev.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 group-hover:translate-x-0.5 transition-all w-fit print:text-[7pt]"
+          >
+            <span>Live Gateway</span>
+            <span class="no-print">↗</span>
+            <span class="hidden print:inline text-slate-500 font-normal"> (nano.andrewwangdev.com)</span>
+          </a>
+        </div>
+
+        <!-- Metric Badges -->
+        <div class="flex flex-wrap gap-2 print:gap-1 mb-5 print:mb-2 font-mono text-xs">
+          <span class="about-badge px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 font-semibold">
+            ~200ms Latency Cut
+          </span>
+          <span class="about-badge px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/60 font-semibold">
+            80%–90% Bandwidth Reduced
+          </span>
+          <span class="about-badge px-2.5 py-1 rounded-md bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-400 border border-violet-200/80 dark:border-violet-800/60 font-semibold">
+            2x Acceleration
+          </span>
+          <span class="about-badge px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/60 font-semibold">
+            50%–60% Hallucination Cut
+          </span>
+        </div>
+
+        <!-- High-Impact Bullets -->
+        <ul class="about-bullet-list space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
+          <li class="about-bullet-item flex items-start gap-2">
+            <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+            <span>Architected an edge state machine for multi-modal routing and heterogeneous model orchestration via NLP and JEV arbitration.</span>
+          </li>
+          <li class="about-bullet-item flex items-start gap-2">
+            <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+            <span>Pioneered a "Shift-Left" Wasm/Canvas architecture for client-side parsing.</span>
+          </li>
+          <li class="about-bullet-item flex items-start gap-2">
+            <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+            <span>Dispatched micro-models to in-browser WebGPU and mid-models to edge nodes, accelerating inference by 2x.</span>
+          </li>
+          <li class="about-bullet-item flex items-start gap-2">
+            <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+            <span>Designed a 5-state dialogue convergence state machine to dynamically manage heterogeneous contexts, mitigating LLM context bloat.</span>
+          </li>
+        </ul>
+      </article>
+
+      <!-- Project 2: Panic Design -->
+      <article class="about-card bg-white dark:bg-[#0B0F19] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm hover:border-indigo-500/40 dark:hover:border-indigo-500/40 transition-all duration-300 relative group print-break-inside-avoid">
+        <div class="about-sec-header flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800/80 pb-4 mb-5">
+          <h3 class="about-project-title text-lg sm:text-xl font-bold font-mono text-slate-900 dark:text-slate-100 flex flex-wrap items-baseline gap-2">
+            <span>Panic Design</span>
+            <span class="text-xs font-mono font-normal text-slate-500 dark:text-slate-400 print:text-[7.5pt]">
+              (AI-Driven Edge Chaos Gateway)
+            </span>
+          </h3>
+          <a 
+            href="https://panic.andrewwangdev.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1 text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 group-hover:translate-x-0.5 transition-all w-fit print:text-[7pt]"
+          >
+            <span>Live Console</span>
+            <span class="no-print">↗</span>
+            <span class="hidden print:inline text-slate-500 font-normal"> (panic.andrewwangdev.com)</span>
+          </a>
+        </div>
+
+        <!-- Metric Badges -->
+        <div class="flex flex-wrap gap-2 print:gap-1 mb-5 print:mb-2 font-mono text-xs">
+          <span class="about-badge px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 font-semibold">
+            &lt;3ms Proxy Latency
+          </span>
+          <span class="about-badge px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/60 font-semibold">
+            &gt;95% AI Accuracy
+          </span>
+          <span class="about-badge px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/60 font-semibold">
+            Zero SDK Intrusion
+          </span>
+        </div>
+
+        <!-- High-Impact Bullets -->
+        <ul class="about-bullet-list space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans">
+          <li class="about-bullet-item flex items-start gap-2">
+            <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+            <span>Deployed a Control/Data Plane separated gateway via Hono/Next.js across 300+ edge nodes for disaster recovery testing, leveraging a cloud model for real-time predictions, achieving &lt;3ms proxy latency and &gt;95% accuracy.</span>
+          </li>
+          <li class="about-bullet-item flex items-start gap-2">
+            <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+            <span>Engineered precise L4/L7 traffic degradation to dynamically mutate TCP/HTTP payloads with zero SDK intrusion. Automated chaos parameter generation and visualized physical routing trajectories.</span>
+          </li>
+        </ul>
+      </article>
+    </section>
+
+    <!-- 4 & 5. Education & Professional Experience (Responsive Grid + 2-Col Print) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 print-grid-2col print:gap-2">
+      
+      <!-- 4. Education -->
+      <section class="about-card bg-white dark:bg-[#0B0F19] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm transition-colors duration-200 print-break-inside-avoid">
+        <div class="about-sec-header flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-4 mb-4">
+          <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+            <span class="text-indigo-500">//</span> Education
+          </h2>
+          <span class="text-xs font-mono text-slate-500 dark:text-slate-400 print:text-[7pt]">2023.09 – 2027.06</span>
+        </div>
+
+        <div class="space-y-3.5 print:space-y-1.5">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 font-mono print:text-[9pt]">
+              Southwest Jiaotong University
+            </h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 font-medium print:text-[7.5pt]">
+              Computer Science (B.S.)
+            </p>
+          </div>
+
+          <!-- GPA and Language Proficiency Metrics -->
+          <div class="flex flex-wrap gap-1.5 font-mono text-xs print:text-[6.8pt]">
+            <span class="about-badge px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80 font-bold">
+              Major GPA: 3.71 / 4.0
+            </span>
+            <span class="about-badge px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
+              CET-4: 619
+            </span>
+            <span class="about-badge px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/80">
+              CET-6: 568
+            </span>
+            <span class="about-badge px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 font-semibold">
+              EF SET: C1 Advanced
+            </span>
+          </div>
+
+          <!-- Coursework Section -->
+          <div class="pt-2.5 print:pt-1 border-t border-slate-100 dark:border-slate-800/60">
+            <div class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mb-1.5 font-medium print:text-[7pt] print:mb-1">
+              Relevant Coursework:
+            </div>
+            <div class="flex flex-wrap gap-1.5 print:gap-1">
+              {coursework.map(course => (
+                <span class="about-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-800 print:text-[6.5pt]">
+                  <span>{course.name}</span>
+                  <span class="text-indigo-600 dark:text-indigo-400 font-bold">({course.score})</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Experience -->
+      <section class="about-card bg-white dark:bg-[#0B0F19] rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 shadow-sm transition-colors duration-200 print-break-inside-avoid">
+        <div class="about-sec-header flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-4 mb-4">
+          <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+            <span class="text-indigo-500">//</span> Experience
+          </h2>
+          <span class="text-xs font-mono text-slate-500 dark:text-slate-400 print:text-[7pt]">2024.07 – 2024.08</span>
+        </div>
+
+        <div class="space-y-3 print:space-y-1.5">
+          <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 font-mono print:text-[9pt]">
+                TAL Education Group
+              </h3>
+              <p class="text-xs text-slate-600 dark:text-slate-400 font-medium print:text-[7.5pt]">
+                Assistant
+              </p>
+            </div>
+            <span class="text-xs font-mono text-slate-500 dark:text-slate-400 print:text-[7pt]">
+              Chengdu, China
+            </span>
+          </div>
+
+          <ul class="about-bullet-list space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-sans pt-1">
+            <li class="about-bullet-item flex items-start gap-2">
+              <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+              <span>Collaborated with English-speaking technical teams.</span>
+            </li>
+            <li class="about-bullet-item flex items-start gap-2">
+              <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+              <span>Optimize product performance.</span>
+            </li>
+            <li class="about-bullet-item flex items-start gap-2">
+              <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+              <span>Track bugs in real-time.</span>
+            </li>
+            <li class="about-bullet-item flex items-start gap-2">
+              <span class="text-indigo-500 font-mono text-xs mt-0.5 flex-shrink-0 print:text-[7pt]">&gt;</span>
+              <span>Analyze user feedback for improved customer support.</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+</Layout>
+
+<script is:inline>
+  // Anti-crawler Email Copy Handler
+  const copyBtn = document.getElementById('btn-copy-email');
+  const copyText = document.getElementById('copy-email-text');
+  
+  // Construct email in runtime to prevent static scraper harvesting
+  const emailTarget = ['me', '@', 'andrewwangdev.com'].join('');
+
+  copyBtn?.addEventListener('click', async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(emailTarget);
+      } else {
+        const input = document.createElement('input');
+        input.value = emailTarget;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+
+      if (copyText) copyText.textContent = '✓ Copied!';
+      if (window.showToast) {
+        window.showToast(`Email copied: ${emailTarget}`, 'success');
+      }
+
+      setTimeout(() => {
+        if (copyText) copyText.textContent = 'Copy Email';
+      }, 2000);
+    } catch (err) {
+      if (window.showToast) {
+        window.showToast(emailTarget, 'info');
+      }
+    }
+  });
+
+  // Print Handler
+  const printBtn = document.getElementById('btn-print');
+  printBtn?.addEventListener('click', () => {
+    window.print();
+  });
+</script>
+
+<style>
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 8mm 12mm 8mm 12mm;
+    }
+
+    /* Force pure white background and crisp dark text across all elements */
+    *, *::before, *::after {
+      background-color: transparent !important;
+      background-image: none !important;
+      color: #0f172a !important;
+      text-shadow: none !important;
+      box-shadow: none !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    html, body, :global(body), :global(main), :global(.dark), :global(html.dark) {
+      background-color: #ffffff !important;
+      background: #ffffff !important;
+      color: #0f172a !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    :global(main) {
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .about-container {
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      gap: 0 !important;
+    }
+
+    .about-card {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+      padding: 6px 10px !important;
+      margin-bottom: 6px !important;
+      box-shadow: none !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+
+    .about-card-hero {
+      padding: 7px 10px !important;
+      margin-bottom: 6px !important;
+    }
+
+    .about-hero-name {
+      font-size: 14pt !important;
+      line-height: 1.1 !important;
+      letter-spacing: -0.02em !important;
+      margin-bottom: 1px !important;
+      color: #0f172a !important;
+    }
+
+    .about-hero-title {
+      font-size: 8pt !important;
+      color: #475569 !important;
+      margin-top: 1px !important;
+    }
+
+    .about-avail-badge {
+      padding: 1px 6px !important;
+      font-size: 7pt !important;
+      margin-top: 2px !important;
+      border: 1px solid #a7f3d0 !important;
+      background-color: #f0fdf4 !important;
+      color: #047857 !important;
+    }
+
+    .about-sec-header {
+      font-size: 7.5pt !important;
+      padding-bottom: 2px !important;
+      margin-bottom: 3px !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    .about-project-title {
+      font-size: 9.5pt !important;
+      line-height: 1.2 !important;
+    }
+
+    .about-badge {
+      padding: 1px 4px !important;
+      font-size: 6.8pt !important;
+      line-height: 1.2 !important;
+      border-radius: 3px !important;
+      border: 1px solid #cbd5e1 !important;
+      background-color: #f8fafc !important;
+      color: #1e293b !important;
+    }
+
+    .about-bullet-list {
+      margin-top: 2px !important;
+    }
+
+    .about-bullet-item {
+      font-size: 7.2pt !important;
+      line-height: 1.25 !important;
+      margin-bottom: 1.5px !important;
+      color: #334155 !important;
+    }
+
+    .print-grid-2col {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+      margin-top: 0 !important;
+    }
+
+    .print-break-inside-avoid {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+  }
+</style>

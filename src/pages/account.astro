@@ -1,0 +1,1167 @@
+---
+import { getLangFromRequest } from '../utils/lang';
+import { ui, defaultLang } from '../i18n/ui';
+const lang = getLangFromRequest(Astro);
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+
+import Layout from '../layouts/Layout.astro';
+import { env } from "cloudflare:workers";
+
+if (!Astro.locals.user) {
+  return Astro.redirect('/login');
+}
+
+let userProfile = null;
+try {
+  const db = env.DB;
+  if (db) {
+    userProfile = await db.prepare('SELECT email, username FROM users WHERE id = ?').bind(Astro.locals.user.id).first();
+  }
+} catch(e) {
+  console.error("Failed to fetch user profile", e);
+}
+
+if (!userProfile) {
+  return Astro.redirect('/login');
+}
+
+// Prepare i18n strings for client-side
+const i18n = {
+  loading: t['account.loading'],
+  no_bookmarks: t['account.no_bookmarks'],
+  load_failed: t['account.load_failed'],
+  pwd_strength: t['account.pwd_strength'],
+  update_success: t['account.update_success'],
+  network_error: t['account.network_error'],
+  updating: t['account.updating'],
+  save: t['account.save'],
+  pwd_updating: t['account.pwd_updating'],
+  pwd_success: t['account.pwd_success'],
+  update_pwd: t['account.update_pwd'],
+  deleting: t['account.deleting'],
+  delete_success: t['account.delete_success'],
+  confirm_delete: t['account.confirm_delete'],
+  delete_failed: t['account.delete_failed'],
+  update_failed: t['account.update_failed'],
+  resources: t['account.resources'],
+  resources_desc: t['account.resources_desc'],
+  no_resources: t['account.no_resources'],
+  no_complaints: t['account.no_complaints'] || 'No complaints yet',
+  connected_accounts: t['account.connected_accounts'] || 'Connected Accounts',
+  connected_accounts_desc: t['account.connected_accounts_desc'] || 'Link accounts for fast login.',
+  passkeys: t['account.passkeys'] || 'Passkeys',
+  passkeys_desc: t['account.passkeys_desc'] || 'Passwordless biometrics login.',
+  bind: t['account.bind'] || 'Connect',
+  unbind: t['account.unbind'] || 'Disconnect',
+  unbind_confirm: t['account.unbind_confirm'] || 'Are you sure you want to disconnect this account?',
+  add_passkey: t['account.add_passkey'] || 'Add Passkey',
+  passkey_name_prompt: t['account.passkey_name_prompt'] || 'Enter a name for this passkey:',
+  delete_passkey_confirm: t['account.delete_passkey_confirm'] || 'Are you sure you want to delete this passkey?',
+  no_passkeys: t['account.no_passkeys'] || 'No passkeys added yet',
+  str_labels: [
+    t['account.str_1'],
+    t['account.str_2'],
+    t['account.str_3'],
+    t['account.str_4'],
+    t['account.str_5']
+  ],
+  complaint_target: t['complaint.target'] || 'Target',
+  complaint_reason: t['complaint.reason'] || 'Reason',
+  complaint_details: t['complaint.details'] || 'Details',
+  complaint_admin_response: t['complaint.admin_response'] || 'Admin Response',
+  complaint_resolved: t['complaint.status_resolved'] || 'Resolved',
+  complaint_pending: t['complaint.status_pending'] || 'Pending',
+  complaint_revoke: t['complaint.revoke'] || 'Revoke',
+  complaint_revoke_confirm: t['complaint.revoke_confirm'] || 'Are you sure?',
+  reasons: {
+    r1: t['complaint.r1'],
+    r2: t['complaint.r2'],
+    r3: t['complaint.r3'],
+    r4: t['complaint.r4'],
+    r5: t['complaint.r5'],
+  },
+  not_connected: t['account.not_connected'] || 'Not connected',
+  connected: t['account.connected'] || 'Connected',
+  checking_status: t['account.checking_status'] || 'Checking status...',
+  google_loading: t['account.google_loading'] || 'Google service is loading, please try again in a moment',
+  webauthn_unsupported: t['account.webauthn_unsupported'] || 'Your browser or device does not support Passkeys (WebAuthn)',
+  passkey_add_success: t['account.passkey_add_success'] || 'Passkey created successfully!',
+  google_bind_success: t['account.google_bind_success'] || 'Google account connected successfully',
+  unbind_failed: t['account.unbind_failed'] || 'Failed to disconnect',
+  ok: t['auth.ok'] || 'OK',
+  cancel: t['account.cancel'] || 'Cancel',
+  notice: t['auth.tip'] || 'Notice',
+  delete: t['admin.btn_delete'] || 'Delete',
+};
+
+const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
+---
+
+<Layout title={t['account.title'] + " | Andrew Wang Dev"}>
+  <script is:inline src="https://accounts.google.com/gsi/client" async defer></script>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row min-h-[80vh] gap-8 relative">
+    
+    <aside class="w-full md:w-64 flex-shrink-0">
+      <div class="md:sticky md:top-24 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-2 md:p-6 flex md:flex-col overflow-x-auto md:overflow-x-visible space-x-2 md:space-x-0 md:space-y-1 no-scrollbar scroll-smooth">
+        <div class="hidden md:block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider mb-4">{t['account.title']}</div>
+        <nav class="flex md:flex-col space-x-1.5 md:space-x-0 md:space-y-2 w-full min-w-max md:min-w-0">
+          <button id="tab-account" aria-label="Account Tab" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span>{t['account.manage']}</span>
+          </button>
+          <button id="tab-bookmarks" aria-label="Bookmarks Tab" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            <span class="whitespace-nowrap">{t['account.bookmarks']}</span>
+          </button>
+          <button id="tab-resources" aria-label="Resources Tab" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            <span class="whitespace-nowrap">{t['account.resources']}</span>
+          </button>
+          <button id="tab-complaints" aria-label="Complaints Tab" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 font-medium transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <span class="whitespace-nowrap">{t['account.complaints'] || '投诉工单'}</span>
+          </button>
+        </nav>
+      </div>
+    </aside>
+
+    <main class="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 md:p-8">
+      <div id="panel-account">
+        <div class="mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">{t['account.manage']}</h1>
+          <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{t['account.manage_desc']}</p>
+        </div>
+
+        <div class="space-y-10 max-w-3xl">
+          <!-- Section 1: Basic Info -->
+          <section>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4 flex items-center">
+              <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mr-3 text-sm font-bold">1</span>
+              {t['account.basic_info']}
+            </h2>
+            <div class="bg-gray-50 dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-2">{t['account.username']}</label>
+                  <div class="px-4 py-2.5 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium shadow-sm">
+                    {userProfile.username}
+                  </div>
+                  <p class="text-xs text-gray-400 dark:text-slate-500 mt-1.5">{t['account.username_desc']}</p>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-2">{t['account.email']}</label>
+                  <div class="px-4 py-2.5 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 border border-gray-200 dark:border-slate-700 rounded-xl text-sm font-medium shadow-sm flex items-center justify-between">
+                    <span>{userProfile.email}</span>
+                    <span class="inline-flex items-center text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">Verified</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 2: Connected Accounts (OAuth) -->
+          <section>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-1 flex items-center">
+              <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mr-3 text-sm font-bold">2</span>
+              {t['account.connected_accounts'] || '第三方账号绑定'}
+            </h2>
+            <p class="text-sm text-gray-500 dark:text-slate-400 mb-4 ml-11">{t['account.connected_accounts_desc'] || '绑定第三方账号以实现安全快捷登录。'}</p>
+            
+            <div id="oauth-accounts-container" class="space-y-3 bg-gray-50 dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700">
+              <!-- Google Item -->
+              <div class="flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-slate-100">Google</h3>
+                    <p id="google-status-text" class="text-xs text-gray-500 dark:text-slate-400">{i18n.checking_status}</p>
+                  </div>
+                </div>
+                <div id="google-action-slot"></div>
+              </div>
+
+              <!-- GitHub Item -->
+              <div class="flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 flex items-center justify-center flex-shrink-0 text-gray-900 dark:text-white">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-slate-100">GitHub</h3>
+                    <p id="github-status-text" class="text-xs text-gray-500 dark:text-slate-400">{i18n.checking_status}</p>
+                  </div>
+                </div>
+                <div id="github-action-slot"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 3: Passkeys Management -->
+          <section>
+            <div class="flex items-center justify-between mb-1">
+              <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 flex items-center">
+                <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mr-3 text-sm font-bold">3</span>
+                {t['account.passkeys'] || '通行密钥 (Passkey)'}
+              </h2>
+              <button type="button" id="btn-add-passkey" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-xl transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>{t['account.add_passkey'] || '添加通行密钥'}</span>
+              </button>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-slate-400 mb-4 ml-11">{t['account.passkeys_desc'] || '使用当前设备的指纹、面容或系统安全 PIN 码进行免密安全登录。'}</p>
+            
+            <div class="bg-gray-50 dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700">
+              <div id="passkeys-list" class="space-y-3">
+                <div class="text-center py-6 text-gray-400 text-xs">{t['account.loading']}</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 4: Security (Password) -->
+          <section>
+            <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4 flex items-center">
+              <span class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mr-3 text-sm font-bold">4</span>
+              {t['account.security']}
+            </h2>
+            <form id="password-form" class="space-y-6 bg-gray-50 dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">{t['account.current_pwd']} <span class="text-red-500">*</span></label>
+                <input type="password" name="oldPassword" aria-label="Old Password Input" required class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">{t['account.new_pwd']} <span class="text-red-500">*</span></label>
+                <input type="password" name="newPassword" id="acct-new-password" aria-label="New Password Input" required minlength="6" class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <div class="mt-2">
+                  <div class="flex gap-1 h-1.5">
+                    <div id="acct-str-1" class="flex-1 rounded-full bg-gray-200 dark:bg-slate-700 transition-colors duration-300"></div>
+                    <div id="acct-str-2" class="flex-1 rounded-full bg-gray-200 dark:bg-slate-700 transition-colors duration-300"></div>
+                    <div id="acct-str-3" class="flex-1 rounded-full bg-gray-200 dark:bg-slate-700 transition-colors duration-300"></div>
+                    <div id="acct-str-4" class="flex-1 rounded-full bg-gray-200 dark:bg-slate-700 transition-colors duration-300"></div>
+                    <div id="acct-str-5" class="flex-1 rounded-full bg-gray-200 dark:bg-slate-700 transition-colors duration-300"></div>
+                  </div>
+                  <p id="acct-str-label" class="text-xs mt-1 text-gray-400 dark:text-slate-500 transition-colors"></p>
+                </div>
+              </div>
+
+              <div class="flex justify-end">
+                <button type="submit" id="btn-save-password" class="px-6 py-2.5 text-sm font-bold text-white bg-gray-800 dark:bg-slate-700 rounded-xl hover:bg-black dark:hover:bg-slate-600 shadow-sm transition-all active:scale-95">{t['account.update_pwd']}</button>
+              </div>
+            </form>
+          </section>
+
+          <section>
+            <h2 class="text-lg font-bold text-red-600 dark:text-red-400 mb-4 flex items-center">
+              <span class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center mr-3 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              </span>
+              {t['account.delete_account']}
+            </h2>
+            <div class="bg-red-50 dark:bg-red-900/10 p-6 rounded-2xl border border-red-100 dark:border-red-900/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 class="font-bold text-red-900 dark:text-red-200 mb-1">{t['account.delete_my_account']}</h3>
+                <p class="text-sm text-red-700/80 dark:text-red-400/80">{t['account.delete_desc']}</p>
+              </div>
+              <button type="button" id="btn-delete-account" class="whitespace-nowrap px-5 py-2.5 text-sm font-bold text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/50 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-300 shadow-sm transition-all active:scale-95">{t['account.request_delete']}</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div id="panel-bookmarks" class="hidden max-w-3xl">
+        <div class="mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">{t['account.bookmarks']}</h1>
+          <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{t['account.bookmarks_desc']}</p>
+        </div>
+        <div id="bookmarks-list" class="space-y-4">
+          <div class="text-center py-12 text-gray-400 dark:text-slate-500">
+            <svg class="w-10 h-10 mx-auto mb-3 text-gray-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            <p class="text-sm">{t['account.loading']}</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-resources" class="hidden max-w-3xl">
+        <div class="mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">{t['account.resources']}</h1>
+          <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{t['account.resources_desc']}</p>
+        </div>
+        <div id="resources-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="col-span-full text-center py-12 text-gray-400 dark:text-slate-500">
+            <svg class="w-10 h-10 mx-auto mb-3 text-gray-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            <p class="text-sm">{t['account.loading']}</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-complaints" class="hidden max-w-4xl">
+        <div class="mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">{t['account.complaints'] || '我的投诉工单'}</h1>
+          <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{t['account.complaints_desc'] || '您提交的所有违规投诉记录。'}</p>
+        </div>
+        <div id="complaints-list" class="space-y-4">
+          <div class="text-center py-12 text-gray-400 dark:text-slate-500">
+            <svg class="w-10 h-10 mx-auto mb-3 text-gray-300 dark:text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <p class="text-sm">{t['account.loading']}</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div id="delete-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm modal-overlay"></div>
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-red-100 dark:border-red-900/30 w-full max-w-md relative z-10 transform scale-95 transition-transform duration-300 modal-content overflow-hidden">
+        <div class="bg-red-50 dark:bg-red-900/10 px-6 py-5 border-b border-red-100 dark:border-red-900/30">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
+              <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h2 class="text-lg font-bold text-red-900 dark:text-red-200">{t['account.delete_notice']}</h2>
+          </div>
+        </div>
+        <div class="p-6">
+          <p class="text-sm text-gray-600 dark:text-slate-400 mb-4">{t['account.delete_notice_p1']}</p>
+          <ul class="text-sm text-gray-500 dark:text-slate-500 space-y-2 list-disc pl-5 mb-6">
+            <li>{t['account.delete_notice_li1']}</li>
+            <li>{t['account.delete_notice_li2']}</li>
+            <li class="font-bold text-red-600 dark:text-red-400">{t['account.delete_notice_li3']}</li>
+          </ul>
+          <label class="flex items-start space-x-3 cursor-pointer group">
+            <div class="flex-shrink-0 mt-0.5">
+              <input type="checkbox" id="confirm-delete-checkbox" aria-label="Confirm Delete Checkbox" class="w-4 h-4 rounded border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-red-600 focus:ring-red-600 focus:ring-2">
+            </div>
+            <span class="text-sm text-gray-700 dark:text-slate-300 font-medium group-hover:text-gray-900 dark:group-hover:text-slate-100">{t['account.delete_confirm_label']}</span>
+          </label>
+        </div>
+        <div class="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex flex-col-reverse sm:flex-row justify-end sm:space-x-3 gap-y-3 sm:gap-y-0">
+          <button type="button" class="modal-close w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">{t['account.cancel']}</button>
+          <button type="button" id="btn-confirm-delete" disabled class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 shadow-sm transition-colors disabled:bg-gray-300 dark:disabled:bg-slate-700 disabled:text-gray-500 dark:disabled:text-slate-500 disabled:shadow-none">{t['account.confirm_delete']}</button>
+        </div>
+      </div>
+      </div>
+    </div>
+    
+    <div id="revoke-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm modal-overlay"></div>
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-yellow-100 dark:border-yellow-900/30 w-full max-w-sm relative z-10 transform scale-95 transition-transform duration-300 modal-content overflow-hidden">
+        <div class="bg-yellow-50 dark:bg-yellow-900/10 px-6 py-5 border-b border-yellow-100 dark:border-yellow-900/30">
+          <div class="flex items-center space-x-3">
+            <div class="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+              <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h2 class="text-lg font-bold text-yellow-900 dark:text-yellow-200">{t['complaint.revoke'] || '撤销投诉'}</h2>
+          </div>
+        </div>
+        <div class="p-6">
+          <p class="text-sm text-gray-600 dark:text-slate-400 mb-4" id="revoke-modal-text">{t['complaint.revoke_confirm'] || '确定要撤销这条投诉记录吗？'}</p>
+        </div>
+        <div class="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex flex-col-reverse sm:flex-row justify-end sm:space-x-3 gap-y-3 sm:gap-y-0">
+          <button type="button" class="modal-close w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">{t['account.cancel'] || '取消'}</button>
+          <button type="button" id="btn-confirm-revoke" class="w-full sm:w-auto px-5 py-2.5 text-sm font-bold text-white bg-yellow-600 rounded-xl hover:bg-yellow-700 shadow-sm transition-colors">{t['complaint.revoke'] || '撤销'}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reusable Custom Dialog Modal (Alert, Confirm, Prompt) -->
+    <div id="custom-dialog-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+      <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm" id="custom-dialog-overlay"></div>
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-800 w-full max-w-sm relative z-10 transform scale-95 transition-transform duration-200 overflow-hidden mx-4">
+        <div class="p-6">
+          <div class="flex items-center space-x-3 mb-3">
+            <div id="custom-dialog-icon-wrap" class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+              <svg id="custom-dialog-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+            </div>
+            <h3 id="custom-dialog-title" class="text-base font-bold text-gray-900 dark:text-slate-100"></h3>
+          </div>
+          <p id="custom-dialog-message" class="text-sm text-gray-600 dark:text-slate-300 leading-relaxed"></p>
+          <div id="custom-dialog-input-wrap" class="mt-4 hidden">
+            <input type="text" id="custom-dialog-input" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm font-medium">
+          </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-slate-800/60 px-6 py-3.5 flex justify-end space-x-2.5 border-t border-gray-100 dark:border-slate-800">
+          <button type="button" id="custom-dialog-btn-cancel" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all"></button>
+          <button type="button" id="custom-dialog-btn-confirm" class="px-4 py-2 text-xs font-bold text-white rounded-xl shadow-sm transition-all"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline>
+    (function() {
+      try {
+        const savedTab = localStorage.getItem('account_tab') || 'account';
+        if (savedTab !== 'account') {
+          const pAcc = document.getElementById('panel-account');
+          if (pAcc) pAcc.classList.add('hidden');
+          const pTgt = document.getElementById('panel-' + savedTab);
+          if (pTgt) pTgt.classList.remove('hidden');
+
+          const tAcc = document.getElementById('tab-account');
+          if (tAcc) {
+            tAcc.classList.remove('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+            tAcc.classList.add('text-gray-600', 'hover:bg-gray-50', 'dark:text-slate-400', 'dark:hover:bg-slate-800');
+          }
+          const tTgt = document.getElementById('tab-' + savedTab);
+          if (tTgt) {
+            tTgt.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-blue-900/30', 'dark:text-blue-400');
+            tTgt.classList.remove('text-gray-600', 'hover:bg-gray-50', 'dark:text-slate-400', 'dark:hover:bg-slate-800');
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
+
+  <script define:vars={{ i18n, googleClientId }}>
+    document.addEventListener('DOMContentLoaded', () => {
+      // ===== Custom Dialog Modal System (Alert, Confirm, Prompt) =====
+      const dialogModal = document.getElementById('custom-dialog-modal');
+      const dialogOverlay = document.getElementById('custom-dialog-overlay');
+      const dialogContent = dialogModal?.querySelector('.relative');
+      const dialogTitle = document.getElementById('custom-dialog-title');
+      const dialogMessage = document.getElementById('custom-dialog-message');
+      const dialogIconWrap = document.getElementById('custom-dialog-icon-wrap');
+      const dialogIcon = document.getElementById('custom-dialog-icon');
+      const dialogInputWrap = document.getElementById('custom-dialog-input-wrap');
+      const dialogInput = document.getElementById('custom-dialog-input');
+      const dialogBtnCancel = document.getElementById('custom-dialog-btn-cancel');
+      const dialogBtnConfirm = document.getElementById('custom-dialog-btn-confirm');
+
+      let dialogResolve = null;
+
+      function closeCustomDialog(result) {
+        if (!dialogModal) return;
+        dialogModal.classList.add('opacity-0');
+        if (dialogContent) dialogContent.classList.add('scale-95');
+        setTimeout(() => {
+          dialogModal.classList.add('hidden');
+          if (dialogResolve) {
+            dialogResolve(result);
+            dialogResolve = null;
+          }
+        }, 150);
+      }
+
+      dialogOverlay?.addEventListener('click', () => closeCustomDialog(null));
+      dialogBtnCancel?.addEventListener('click', () => closeCustomDialog(null));
+
+      function openCustomDialog() {
+        if (!dialogModal) return;
+        dialogModal.classList.remove('hidden');
+        setTimeout(() => {
+          dialogModal.classList.remove('opacity-0');
+          if (dialogContent) dialogContent.classList.remove('scale-95');
+        }, 10);
+      }
+
+      function customAlert(title, message, type = 'info') {
+        return new Promise((resolve) => {
+          dialogResolve = resolve;
+          if (dialogTitle) dialogTitle.innerText = title || i18n.notice || 'Notice';
+          if (dialogMessage) dialogMessage.innerText = message || '';
+          dialogInputWrap?.classList.add('hidden');
+          dialogBtnCancel?.classList.add('hidden');
+          if (dialogBtnConfirm) dialogBtnConfirm.innerText = i18n.ok || 'OK';
+
+          if (type === 'error') {
+            if (dialogIconWrap) dialogIconWrap.className = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+            if (dialogIcon) dialogIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+            if (dialogBtnConfirm) dialogBtnConfirm.className = 'px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition-all';
+          } else if (type === 'warning') {
+            if (dialogIconWrap) dialogIconWrap.className = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
+            if (dialogIcon) dialogIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />';
+            if (dialogBtnConfirm) dialogBtnConfirm.className = 'px-4 py-2 text-xs font-bold text-white bg-yellow-600 hover:bg-yellow-700 rounded-xl shadow-sm transition-all';
+          } else {
+            if (dialogIconWrap) dialogIconWrap.className = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+            if (dialogIcon) dialogIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+            if (dialogBtnConfirm) dialogBtnConfirm.className = 'px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all';
+          }
+
+          if (dialogBtnConfirm) dialogBtnConfirm.onclick = () => closeCustomDialog(true);
+          openCustomDialog();
+        });
+      }
+
+      function customConfirm(title, message, confirmText, type = 'warning') {
+        return new Promise((resolve) => {
+          dialogResolve = resolve;
+          if (dialogTitle) dialogTitle.innerText = title || i18n.notice || 'Notice';
+          if (dialogMessage) dialogMessage.innerText = message || '';
+          dialogInputWrap?.classList.add('hidden');
+          dialogBtnCancel?.classList.remove('hidden');
+          if (dialogBtnCancel) dialogBtnCancel.innerText = i18n.cancel || 'Cancel';
+          if (dialogBtnConfirm) dialogBtnConfirm.innerText = confirmText || i18n.ok || 'Confirm';
+
+          if (type === 'danger') {
+            if (dialogIconWrap) dialogIconWrap.className = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+            if (dialogIcon) dialogIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />';
+            if (dialogBtnConfirm) dialogBtnConfirm.className = 'px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition-all';
+          } else {
+            if (dialogIconWrap) dialogIconWrap.className = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
+            if (dialogIcon) dialogIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />';
+            if (dialogBtnConfirm) dialogBtnConfirm.className = 'px-4 py-2 text-xs font-bold text-white bg-yellow-600 hover:bg-yellow-700 rounded-xl shadow-sm transition-all';
+          }
+
+          if (dialogBtnConfirm) dialogBtnConfirm.onclick = () => closeCustomDialog(true);
+          openCustomDialog();
+        });
+      }
+
+      function customPrompt(title, message, defaultValue = '', placeholder = '') {
+        return new Promise((resolve) => {
+          dialogResolve = resolve;
+          if (dialogTitle) dialogTitle.innerText = title || i18n.notice || 'Notice';
+          if (dialogMessage) dialogMessage.innerText = message || '';
+          dialogInputWrap?.classList.remove('hidden');
+          if (dialogInput) {
+            dialogInput.value = defaultValue;
+            dialogInput.placeholder = placeholder || '';
+          }
+          dialogBtnCancel?.classList.remove('hidden');
+          if (dialogBtnCancel) dialogBtnCancel.innerText = i18n.cancel || 'Cancel';
+          if (dialogBtnConfirm) dialogBtnConfirm.innerText = i18n.ok || 'OK';
+
+          if (dialogIconWrap) dialogIconWrap.className = 'w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+          if (dialogIcon) dialogIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />';
+          if (dialogBtnConfirm) dialogBtnConfirm.className = 'px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all';
+
+          const submitInput = () => {
+            const val = dialogInput ? dialogInput.value.trim() : '';
+            closeCustomDialog(val || null);
+          };
+
+          if (dialogBtnConfirm) dialogBtnConfirm.onclick = submitInput;
+          if (dialogInput) {
+            dialogInput.onkeydown = (e) => {
+              if (e.key === 'Enter') submitInput();
+              if (e.key === 'Escape') closeCustomDialog(null);
+            };
+          }
+
+          openCustomDialog();
+          setTimeout(() => dialogInput?.focus(), 50);
+        });
+      }
+
+      const tabAccount = document.getElementById('tab-account');
+      const tabBookmarks = document.getElementById('tab-bookmarks');
+      const tabResources = document.getElementById('tab-resources');
+      const tabComplaints = document.getElementById('tab-complaints');
+      
+      const panelAccount = document.getElementById('panel-account');
+      const panelBookmarks = document.getElementById('panel-bookmarks');
+      const panelResources = document.getElementById('panel-resources');
+      const panelComplaints = document.getElementById('panel-complaints');
+      
+      let bookmarksLoaded = false;
+      let resourcesLoaded = false;
+      let complaintsLoaded = false;
+
+      function switchTab(tab) {
+        localStorage.setItem('account_tab', tab);
+        const tabs = [tabAccount, tabBookmarks, tabResources, tabComplaints];
+        const panels = [panelAccount, panelBookmarks, panelResources, panelComplaints];
+        
+        tabs.forEach(t => { 
+          if(t) {
+            t.classList.remove('bg-blue-50','text-blue-700','dark:bg-blue-900/30','dark:text-blue-400'); 
+            t.classList.add('text-gray-600','hover:bg-gray-50','dark:text-slate-400','dark:hover:bg-slate-800'); 
+          }
+        });
+        panels.forEach(p => p && p.classList.add('hidden'));
+
+        if (tab === 'account') {
+          tabAccount.classList.add('bg-blue-50','text-blue-700','dark:bg-blue-900/30','dark:text-blue-400');
+          tabAccount.classList.remove('text-gray-600','hover:bg-gray-50','dark:text-slate-400','dark:hover:bg-slate-800');
+          panelAccount.classList.remove('hidden');
+        } else if (tab === 'bookmarks') {
+          tabBookmarks.classList.add('bg-blue-50','text-blue-700','dark:bg-blue-900/30','dark:text-blue-400');
+          tabBookmarks.classList.remove('text-gray-600','hover:bg-gray-50','dark:text-slate-400','dark:hover:bg-slate-800');
+          panelBookmarks.classList.remove('hidden');
+          if (!bookmarksLoaded) { loadBookmarks(); bookmarksLoaded = true; }
+        } else if (tab === 'resources') {
+          tabResources.classList.add('bg-blue-50','text-blue-700','dark:bg-blue-900/30','dark:text-blue-400');
+          tabResources.classList.remove('text-gray-600','hover:bg-gray-50','dark:text-slate-400','dark:hover:bg-slate-800');
+          panelResources.classList.remove('hidden');
+          if (!resourcesLoaded) { loadResources(); resourcesLoaded = true; }
+        } else if (tab === 'complaints') {
+          tabComplaints.classList.add('bg-blue-50','text-blue-700','dark:bg-blue-900/30','dark:text-blue-400');
+          tabComplaints.classList.remove('text-gray-600','hover:bg-gray-50','dark:text-slate-400','dark:hover:bg-slate-800');
+          panelComplaints.classList.remove('hidden');
+          if (!complaintsLoaded) { loadComplaints(); complaintsLoaded = true; }
+        }
+      }
+      tabAccount?.addEventListener('click', () => switchTab('account'));
+      tabBookmarks?.addEventListener('click', () => switchTab('bookmarks'));
+      tabResources?.addEventListener('click', () => switchTab('resources'));
+      tabComplaints?.addEventListener('click', () => switchTab('complaints'));
+      
+      const savedTab = localStorage.getItem('account_tab') || 'account';
+      switchTab(savedTab);
+
+      async function loadBookmarks() {
+        const container = document.getElementById('bookmarks-list');
+        try {
+          const res = await fetch('/api/account/bookmarks');
+          const data = await res.json();
+          if (data.success && data.posts.length > 0) {
+            container.innerHTML = data.posts.map(post => {
+              const dateStr = new Date(post.created_at).toLocaleDateString('zh-CN');
+              return `
+                <a href="/blog/${post.id}" class="group block bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all overflow-hidden">
+                  <div class="flex flex-col sm:flex-row">
+                    <div class="flex-1 p-5">
+                      <h3 class="text-lg font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">${post.title}</h3>
+                      <div class="flex items-center space-x-2 text-xs text-gray-400 dark:text-slate-500 mb-2">
+                        <span>${post.author || 'Andrew Wang'}</span>
+                        <span>·</span>
+                        <span>${dateStr}</span>
+                      </div>
+                      ${post.summary ? `<p class="text-gray-600 dark:text-slate-400 text-sm line-clamp-2">${post.summary}</p>` : ''}
+                    ${post.thumbnail_url ? `<div class="sm:w-40 flex-shrink-0 aspect-video sm:aspect-[4/3]"><img src="${post.thumbnail_url}" alt="Blog Cover" class="w-full h-full object-cover sm:rounded-r-2xl" decoding="async" /></div>` : ''}
+                  </div>
+                </a>
+              `;
+            }).join('');
+          } else {
+            container.innerHTML = `<div class="text-center py-12 text-gray-400"><svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg><p class="text-sm">${i18n.no_bookmarks}</p></div>`;
+          }
+        } catch(e) {
+          container.innerHTML = `<div class="text-center py-12 text-red-400"><p class="text-sm">${i18n.load_failed}</p></div>`;
+        }
+      }
+
+      async function loadResources() {
+        const container = document.getElementById('resources-list');
+        try {
+          const res = await fetch('/api/account/resource-bookmarks');
+          const data = await res.json();
+          if (data.success && data.resources.length > 0) {
+            container.innerHTML = data.resources.map(res => {
+              return `
+                <div class="group relative bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 hover:shadow-xl transition-all duration-500 flex flex-col h-full">
+                  <a href="/resources/${res.id}" class="absolute inset-0 z-0"></a>
+                  <div class="flex items-center space-x-4 mb-4 relative z-10 pointer-events-none">
+                    <div class="w-12 h-12 rounded-2xl overflow-hidden bg-gray-50 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center border border-gray-100 dark:border-slate-700">
+                      ${res.logo_url ? `<img src="${res.logo_url}" alt="Resource Logo" class="w-full h-full object-cover" />` : `<span class="text-xl font-bold text-gray-300 dark:text-slate-600">${res.name.substring(0, 2).toUpperCase()}</span>`}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-base font-bold text-gray-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${res.name}</h3>
+                      <p class="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-wider">${res.author || 'Andrew Wang'}</p>
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mb-4 relative z-10 pointer-events-none">${res.summary || ''}</p>
+                  <div class="mt-auto pt-4 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between relative z-10 pointer-events-none">
+                    <span class="text-[10px] text-gray-400 dark:text-slate-500 font-bold">${new Date(res.created_at).toLocaleDateString('zh-CN')}</span>
+                    <div class="flex items-center space-x-1 text-red-400">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>
+                      <span class="text-[10px] font-bold">${res.likes_count || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('');
+          } else {
+            container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400"><svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg><p class="text-sm">${i18n.no_resources}</p></div>`;
+          }
+        } catch(e) {
+          container.innerHTML = `<div class="col-span-full text-center py-12 text-red-400"><p class="text-sm">${i18n.load_failed}</p></div>`;
+        }
+      }
+
+      async function loadComplaints() {
+        const container = document.getElementById('complaints-list');
+        try {
+          const res = await fetch('/api/complaints/user');
+          const data = await res.json();
+          if (data.complaints && data.complaints.length > 0) {
+            container.innerHTML = data.complaints.map(c => {
+              const statusColor = c.status === 'resolved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+              const statusText = c.status === 'resolved' ? i18n.complaint_resolved : i18n.complaint_pending;
+              let targetLink = '';
+              if(c.target_type === 'blog') targetLink = `/blog/${c.target_id}`;
+              else if(c.target_type === 'resource') targetLink = `/resources/${c.target_id}`;
+              else if(c.target_type === 'news') targetLink = `/news/${c.target_id}`;
+              
+              const fullTargetUrl = targetLink ? `${window.location.origin}${targetLink}` : '';
+              const mappedReason = i18n.reasons[c.reason] || c.reason;
+
+              return `
+                <div class="bg-gray-50 dark:bg-slate-800 p-5 rounded-2xl border border-gray-100 dark:border-slate-700" id="complaint-${c.id}">
+                  <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center space-x-3">
+                      <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-md ${statusColor}">${statusText}</span>
+                      <span class="text-xs text-gray-500 dark:text-slate-400">${new Date(c.created_at).toLocaleDateString('zh-CN')}</span>
+                    </div>
+                    <button onclick="deleteComplaint(${c.id})" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium transition-colors">${i18n.complaint_revoke}</button>
+                  </div>
+                  <div class="mb-2">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">${i18n.complaint_target}:</span>
+                    <a href="${fullTargetUrl}" target="_blank" class="ml-2 text-sm text-blue-600 dark:text-blue-400 hover:underline break-all">${fullTargetUrl}</a>
+                  </div>
+                  <div class="mb-2">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">${i18n.complaint_reason}:</span>
+                    <span class="ml-2 text-sm text-gray-800 dark:text-slate-200">${mappedReason}</span>
+                  </div>
+                  <div class="mb-3">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider block mb-1">${i18n.complaint_details}:</span>
+                    <p class="text-sm text-gray-600 dark:text-slate-300 bg-white dark:bg-slate-900 p-3 rounded-lg border border-gray-100 dark:border-slate-700 whitespace-pre-wrap">${c.details.replace(/</g, '&lt;')}</p>
+                  </div>
+                  ${c.result ? `
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+                      <span class="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider block mb-1">${i18n.complaint_admin_response}:</span>
+                      <p class="text-sm text-gray-700 dark:text-slate-300 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-100 dark:border-green-900/30 whitespace-pre-wrap">${c.result.replace(/</g, '&lt;')}</p>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('');
+          } else {
+            container.innerHTML = `<div class="text-center py-12 text-gray-400"><svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><p class="text-sm">${i18n.no_complaints}</p></div>`;
+          }
+        } catch(e) {
+          container.innerHTML = `<div class="text-center py-12 text-red-400"><p class="text-sm">${i18n.load_failed}</p></div>`;
+        }
+      }
+
+      const revokeModal = document.getElementById('revoke-modal');
+      const btnConfirmRevoke = document.getElementById('btn-confirm-revoke');
+      let revokeTargetId = null;
+
+      window.deleteComplaint = function(id) {
+        revokeTargetId = id;
+        document.getElementById('revoke-modal-text').innerText = i18n.complaint_revoke_confirm;
+        revokeModal.classList.remove('hidden');
+        setTimeout(() => revokeModal.classList.remove('opacity-0'), 10);
+        setTimeout(() => revokeModal.querySelector('.modal-content').classList.remove('scale-95'), 10);
+      };
+
+      btnConfirmRevoke.addEventListener('click', async () => {
+        if (!revokeTargetId) return;
+        const id = revokeTargetId;
+        
+        btnConfirmRevoke.disabled = true;
+        btnConfirmRevoke.innerHTML = '<svg class="animate-spin h-4 w-4 mr-2 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        
+        try {
+          const res = await fetch('/api/complaints/delete?id=' + id, { method: 'DELETE' });
+          if(res.ok) {
+            document.getElementById('complaint-' + id).remove();
+            revokeModal.querySelector('.modal-close').click();
+          } else {
+            customAlert(i18n.notice, i18n.delete_failed || '删除失败', 'error');
+          }
+        } catch(e) {
+          customAlert(i18n.notice, i18n.network_error || '网络错误', 'error');
+        } finally {
+          btnConfirmRevoke.disabled = false;
+          btnConfirmRevoke.innerText = i18n.complaint_revoke || '撤销';
+        }
+      });
+
+      function calcStrength(pw) {
+        let score = 0;
+        if (!pw) return 0;
+        if (pw.length >= 6) score++;
+        if (pw.length >= 10) score++;
+        if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+        if (/\d/.test(pw)) score++;
+        if (/[^a-zA-Z0-9]/.test(pw)) score++;
+        return Math.min(score, 5);
+      }
+      const strColors = ['', '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4'];
+      const acctPwInput = document.getElementById('acct-new-password');
+      if (acctPwInput) {
+        acctPwInput.addEventListener('input', () => {
+          const s = calcStrength(acctPwInput.value);
+          for (let i = 1; i <= 5; i++) {
+            const bar = document.getElementById('acct-str-' + i);
+            bar.style.backgroundColor = i <= s ? strColors[s] : '#e5e7eb';
+          }
+          const label = document.getElementById('acct-str-label');
+          label.textContent = s > 0 ? i18n.pwd_strength + i18n.str_labels[s-1] : '';
+          label.style.color = strColors[s] || '#9ca3af';
+        });
+      }
+
+      // ===== OAuth Status & Management =====
+      const btnPrimaryStyle = 'inline-flex items-center px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-xl transition-all shadow-sm';
+      const btnDangerStyle = 'inline-flex items-center px-3.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 rounded-xl transition-all shadow-sm';
+
+      let googleTokenClient = null;
+
+      function getGoogleTokenClient() {
+        if (googleTokenClient) return googleTokenClient;
+        if (!window.google?.accounts?.oauth2 || !googleClientId) return null;
+
+        try {
+          googleTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: googleClientId,
+            scope: 'openid email profile',
+            callback: async (resp) => {
+              if (resp.error) {
+                if (resp.error !== 'popup_closed_by_user') {
+                  customAlert(i18n.notice, resp.error_description || resp.error, 'error');
+                }
+                return;
+              }
+              if (resp.access_token) {
+                try {
+                  const res = await fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ access_token: resp.access_token, action: 'bind' })
+                  });
+                  const data = await res.json();
+                  if (res.ok && data.success) {
+                    if (window.showToast) window.showToast(data.message || i18n.google_bind_success, 'success');
+                    loadOAuthStatus();
+                  } else {
+                    customAlert(i18n.notice, data.error || '绑定失败', 'error');
+                  }
+                } catch(e) {
+                  customAlert(i18n.notice, i18n.network_error || '网络错误', 'error');
+                }
+              }
+            }
+          });
+          return googleTokenClient;
+        } catch (err) {
+          console.error('Google OAuth init error:', err);
+          return null;
+        }
+      }
+
+      async function loadOAuthStatus() {
+        try {
+          getGoogleTokenClient();
+          const res = await fetch('/api/account/oauth/status');
+          const data = await res.json();
+          if (!data.success) return;
+
+          const googleAcc = data.accounts.find(a => a.provider === 'google');
+          const githubAcc = data.accounts.find(a => a.provider === 'github');
+
+          // Google Slot
+          const googleStatusText = document.getElementById('google-status-text');
+          const googleActionSlot = document.getElementById('google-action-slot');
+          if (googleAcc) {
+            googleStatusText.innerText = `${googleAcc.provider_email || i18n.connected}`;
+            googleStatusText.className = 'text-xs text-emerald-600 dark:text-emerald-400 font-medium';
+            googleActionSlot.innerHTML = `<button type="button" onclick="unbindOAuth('google')" class="${btnDangerStyle}">${i18n.unbind || '解绑'}</button>`;
+          } else {
+            googleStatusText.innerText = i18n.not_connected || '未绑定';
+            googleStatusText.className = 'text-xs text-gray-500 dark:text-slate-400';
+            googleActionSlot.innerHTML = `<button type="button" onclick="bindGoogle()" class="${btnPrimaryStyle}">${i18n.bind || '立即绑定'}</button>`;
+            getGoogleTokenClient();
+          }
+
+          // GitHub Slot
+          const githubStatusText = document.getElementById('github-status-text');
+          const githubActionSlot = document.getElementById('github-action-slot');
+          if (githubAcc) {
+            githubStatusText.innerText = `${githubAcc.provider_email || i18n.connected}`;
+            githubStatusText.className = 'text-xs text-emerald-600 dark:text-emerald-400 font-medium';
+            githubActionSlot.innerHTML = `<button type="button" onclick="unbindOAuth('github')" class="${btnDangerStyle}">${i18n.unbind || '解绑'}</button>`;
+          } else {
+            githubStatusText.innerText = i18n.not_connected || '未绑定';
+            githubStatusText.className = 'text-xs text-gray-500 dark:text-slate-400';
+            githubActionSlot.innerHTML = `<a href="/api/auth/github?action=bind" class="${btnPrimaryStyle}">${i18n.bind || '立即绑定'}</a>`;
+          }
+        } catch(e) {
+          console.error('Failed to load OAuth status:', e);
+        }
+      }
+
+      window.unbindOAuth = async function(provider) {
+        const confirmed = await customConfirm(
+          i18n.notice || '提示',
+          i18n.unbind_confirm || '确定要解绑该账号吗？',
+          i18n.unbind || '解绑',
+          'danger'
+        );
+        if (!confirmed) return;
+
+        try {
+          const res = await fetch('/api/account/oauth/unbind', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if (window.showToast) window.showToast(data.message, 'success');
+            loadOAuthStatus();
+          } else {
+            customAlert(i18n.notice, data.error || i18n.unbind_failed, 'error');
+          }
+        } catch(e) {
+          customAlert(i18n.notice, i18n.network_error || '网络错误', 'error');
+        }
+      };
+
+      window.bindGoogle = function() {
+        if (!googleClientId) {
+          customAlert(i18n.notice, 'Google Client ID 未配置', 'error');
+          return;
+        }
+
+        const client = getGoogleTokenClient();
+        if (client) {
+          client.requestAccessToken({ prompt: 'select_account' });
+        } else {
+          let attempts = 0;
+          const timer = setInterval(() => {
+            attempts++;
+            const c = getGoogleTokenClient();
+            if (c) {
+              clearInterval(timer);
+              c.requestAccessToken({ prompt: 'select_account' });
+            } else if (attempts > 10) {
+              clearInterval(timer);
+              customAlert(i18n.notice, i18n.google_loading || 'Google 服务加载中，请稍后再试', 'warning');
+            }
+          }, 200);
+        }
+      };
+
+      loadOAuthStatus();
+      window.addEventListener('load', () => getGoogleTokenClient());
+
+      // ===== Passkeys Management =====
+      async function loadPasskeys() {
+        const container = document.getElementById('passkeys-list');
+        try {
+          const res = await fetch('/api/account/passkeys');
+          const data = await res.json();
+          if (data.success && data.passkeys.length > 0) {
+            container.innerHTML = data.passkeys.map(pk => {
+              const createdDate = new Date(pk.created_at).toLocaleDateString();
+              const lastUsed = pk.last_used_at ? new Date(pk.last_used_at).toLocaleDateString() : (i18n.never || 'Never');
+              return `
+                <div class="flex items-center justify-between p-3.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-semibold text-gray-900 dark:text-slate-100">${pk.name}</h4>
+                      <p class="text-xs text-gray-400 dark:text-slate-500">${createdDate}</p>
+                    </div>
+                  </div>
+                  <button type="button" onclick="deletePasskey('${pk.id}')" class="px-2.5 py-1 text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-all">${i18n.delete || '删除'}</button>
+                </div>
+              `;
+            }).join('');
+          } else {
+            container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs">${i18n.no_passkeys || '暂未添加通行密钥'}</div>`;
+          }
+        } catch(e) {
+          container.innerHTML = `<div class="text-center py-6 text-red-400 text-xs">${i18n.load_failed}</div>`;
+        }
+      }
+
+      window.deletePasskey = async function(id) {
+        const confirmed = await customConfirm(
+          i18n.notice || '提示',
+          i18n.delete_passkey_confirm || '确定要删除此通行密钥吗？',
+          i18n.delete || '删除',
+          'danger'
+        );
+        if (!confirmed) return;
+
+        try {
+          const res = await fetch('/api/account/passkeys', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            if (window.showToast) window.showToast(data.message || '通行密钥已移除', 'success');
+            loadPasskeys();
+          } else {
+            customAlert(i18n.notice, data.error || '删除失败', 'error');
+          }
+        } catch(e) {
+          customAlert(i18n.notice, i18n.network_error || '网络错误', 'error');
+        }
+      };
+
+      document.getElementById('btn-add-passkey')?.addEventListener('click', async () => {
+        if (!window.PublicKeyCredential) {
+          customAlert(i18n.notice, i18n.webauthn_unsupported, 'warning');
+          return;
+        }
+
+        const name = await customPrompt(
+          i18n.passkeys || '通行密钥',
+          i18n.passkey_name_prompt || '请输入此通行密钥的名称（例如: MacBook Touch ID）:',
+          'My Device Passkey',
+          'MacBook Touch ID / Windows Hello'
+        );
+        if (!name) return; // user cancelled
+
+        try {
+          const optRes = await fetch('/api/auth/passkey/register-options', { method: 'POST' });
+          const optData = await optRes.json();
+          if (!optData.success) {
+            customAlert(i18n.notice, optData.error || '获取注册参数失败', 'error');
+            return;
+          }
+
+          const options = optData.options;
+          options.challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+          options.user.id = Uint8Array.from(atob(options.user.id.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+
+          const credential = await navigator.credentials.create({ publicKey: options });
+          if (!credential) return;
+
+          function bufferToBase64Url(buf) {
+            const bytes = new Uint8Array(buf);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+          }
+
+          let publicKeySpki = '';
+          if (typeof credential.response.getPublicKey === 'function') {
+            const spkiBuf = credential.response.getPublicKey();
+            if (spkiBuf) publicKeySpki = bufferToBase64Url(spkiBuf);
+          }
+
+          const verifyPayload = {
+            id: credential.id,
+            rawId: bufferToBase64Url(credential.rawId),
+            name: name.trim() || 'My Passkey',
+            publicKeySpki,
+            response: {
+              clientDataJSON: bufferToBase64Url(credential.response.clientDataJSON),
+              attestationObject: bufferToBase64Url(credential.response.attestationObject),
+              transports: credential.response.getTransports ? credential.response.getTransports() : ['internal']
+            }
+          };
+
+          const verifyRes = await fetch('/api/auth/passkey/register-verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(verifyPayload)
+          });
+
+          const verifyData = await verifyRes.json();
+          if (verifyRes.ok && verifyData.success) {
+            if (window.showToast) window.showToast(verifyData.message || i18n.passkey_add_success, 'success');
+            loadPasskeys();
+          } else {
+            customAlert(i18n.notice, verifyData.error || '通行密钥注册失败', 'error');
+          }
+
+        } catch(err) {
+          if (err.name !== 'NotAllowedError') {
+            customAlert(i18n.notice, '创建通行密钥失败: ' + err.message, 'error');
+          }
+        }
+      });
+
+      loadPasskeys();
+
+      // Check URL search params for toast messages
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('success') && window.showToast) {
+        window.showToast(urlParams.get('success'), 'success');
+        history.replaceState(null, '', window.location.pathname);
+      } else if (urlParams.has('error')) {
+        customAlert(i18n.notice, decodeURIComponent(urlParams.get('error')), 'error');
+        history.replaceState(null, '', window.location.pathname);
+      }
+
+      const passwordForm = document.getElementById('password-form');
+      passwordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-password');
+        btn.disabled = true;
+        btn.textContent = i18n.pwd_updating;
+        const formData = new FormData(passwordForm);
+        const payload = Object.fromEntries(formData.entries());
+        try {
+          const res = await fetch('/api/account/password', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (data.success) {
+            if(window.showToast) window.showToast(i18n.pwd_success, 'success');
+            passwordForm.reset();
+          } else {
+            if(window.showToast) window.showToast(data.error || i18n.update_failed, 'error');
+          }
+        } catch (err) {
+          if(window.showToast) window.showToast(i18n.network_error, 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = i18n.update_pwd;
+        }
+      });
+
+      const modal = document.getElementById('delete-modal');
+      const modalContent = modal.querySelector('.modal-content');
+      const btnDeleteOpen = document.getElementById('btn-delete-account');
+      const checkbox = document.getElementById('confirm-delete-checkbox');
+      const btnConfirmDelete = document.getElementById('btn-confirm-delete');
+
+      function openModal() {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          modal.classList.remove('opacity-0');
+          modalContent.classList.remove('scale-95');
+        }, 10);
+      }
+      function closeModal(modalEl) {
+        if(!modalEl) return;
+        const modalContentEl = modalEl.querySelector('.modal-content');
+        modalEl.classList.add('opacity-0');
+        if(modalContentEl) modalContentEl.classList.add('scale-95');
+        setTimeout(() => {
+          modalEl.classList.add('hidden');
+        }, 300);
+      }
+      btnDeleteOpen.addEventListener('click', openModal);
+      document.querySelectorAll('.modal-close, .modal-overlay').forEach(el => {
+        el.addEventListener('click', (e) => {
+          const m = e.target.closest('.fixed');
+          if(m) closeModal(m);
+        });
+      });
+      checkbox.addEventListener('change', (e) => {
+        btnConfirmDelete.disabled = !e.target.checked;
+      });
+      btnConfirmDelete.addEventListener('click', async () => {
+        btnConfirmDelete.disabled = true;
+        btnConfirmDelete.textContent = i18n.deleting;
+        try {
+          const res = await fetch('/api/account/delete', { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            if(window.showToast) window.showToast(i18n.delete_success, 'success');
+            setTimeout(() => { window.location.href = '/login'; }, 1000);
+          } else {
+            if(window.showToast) window.showToast(data.error || i18n.delete_failed, 'error');
+            btnConfirmDelete.disabled = false;
+            btnConfirmDelete.textContent = i18n.confirm_delete;
+          }
+        } catch (err) {
+          if(window.showToast) window.showToast(i18n.network_error, 'error');
+          btnConfirmDelete.disabled = false;
+          btnConfirmDelete.textContent = i18n.confirm_delete;
+        }
+      });
+    });
+  </script>
+</Layout>
+

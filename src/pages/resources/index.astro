@@ -1,0 +1,256 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { env } from "cloudflare:workers";
+
+import { getLangFromRequest } from '../../utils/lang';
+import { ui, defaultLang } from '../../i18n/ui';
+
+const lang = getLangFromRequest(Astro);
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+
+let resourcesList: any[] = [];
+try {
+  const db = env.DB;
+  if (db) {
+    const result = await db.prepare(`
+      SELECT r.*, 
+        (SELECT COUNT(*) FROM interactions i WHERE i.target_type = 'resource_like' AND i.target_id = 'res_' || r.id) as likes_count
+      FROM resources r 
+      ORDER BY created_at DESC
+    `).all();
+    resourcesList = result.results || [];
+  }
+} catch(e) {
+  console.error("Failed to load resources", e);
+}
+
+// Helper text truncate
+const truncate = (text: string, length = 100) => text.length > length ? text.substring(0, length) + '...' : text;
+---
+
+<Layout 
+  title={`${t['seo.resources.title']} | Andrew Wang Dev`}
+  description={t['seo.resources.desc']}
+>
+	<div class="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+		<header class="mb-12 text-center md:text-left">
+			<h1 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-slate-100 tracking-tight mb-3">{t['res.title']}</h1>
+			<p class="text-lg text-gray-500 dark:text-slate-400 font-medium">{t['res.desc']}</p>
+		</header>
+
+    <!-- Search & Filter Bar -->
+    <div class="mb-12 flex flex-col lg:flex-row gap-6 items-center justify-between">
+      <!-- Search Input -->
+      <div class="relative flex-1 w-full group">
+        <div class="absolute inset-y-0 left-6 flex items-center pointer-events-none text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <input 
+          type="text" 
+          id="res-search-input" 
+          aria-label="Search Resources"
+          placeholder={t['res.search_placeholder']} 
+          class="w-full pl-14 pr-8 py-5 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-[2.2rem] shadow-sm focus:ring-4 focus:ring-blue-500/10 text-gray-900 dark:text-slate-100 text-sm font-bold transition-all outline-none"
+        />
+      </div>
+
+      <!-- Custom Sort Dropdown -->
+      <div class="relative w-full lg:w-72" id="res-sort-dropdown">
+        <button type="button" id="sort-trigger" aria-label="Sort Menu" class="w-full flex items-center justify-between px-7 py-5 bg-white dark:bg-slate-900 rounded-[2.2rem] shadow-sm border border-gray-100 dark:border-slate-800 text-sm font-bold text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all hover:border-blue-100 dark:hover:border-blue-900 group">
+          <div class="flex items-center">
+            <span class="text-gray-400 dark:text-slate-500 mr-3 font-bold">{t['res.sort_by']}</span>
+            <span id="selected-sort-label" class="font-normal text-gray-900 dark:text-slate-300">{t['res.sort.latest']}</span>
+          </div>
+          <svg class="w-5 h-5 text-blue-500 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+        
+        <div id="sort-menu" class="absolute z-[100] mt-3 w-full bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-slate-800 overflow-hidden hidden opacity-0 translate-y-2 transition-all duration-300">
+          <div class="p-2 space-y-1">
+            <button aria-label="Sort by Latest" class="sort-opt w-full text-left px-5 py-3.5 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-normal flex items-center justify-between group dark:text-slate-300" data-value="time-desc">
+              <span>{t['res.sort.latest']}</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100"></div>
+            </button>
+            <button aria-label="Sort by Oldest" class="sort-opt w-full text-left px-5 py-3.5 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-normal flex items-center justify-between group dark:text-slate-300" data-value="time-asc">
+              <span>{t['res.sort.oldest']}</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100"></div>
+            </button>
+            <button aria-label="Sort by Likes Descending" class="sort-opt w-full text-left px-5 py-3.5 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-normal flex items-center justify-between group dark:text-slate-300" data-value="likes-desc">
+              <span>{t['res.sort.likes_desc']}</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100"></div>
+            </button>
+            <button aria-label="Sort by Likes Ascending" class="sort-opt w-full text-left px-5 py-3.5 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm font-normal flex items-center justify-between group dark:text-slate-300" data-value="likes-asc">
+              <span>{t['res.sort.likes_asc']}</span>
+              <div class="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100"></div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+		<div id="res-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+			{resourcesList.map((res: any) => {
+				const tags = (() => {
+					try { return JSON.parse(res.tags || '[]'); } 
+					catch { return []; }
+				})();
+
+				return (
+					<div 
+            class="res-card group bg-white dark:bg-slate-900 rounded-[2.5rem] p-7 shadow-[0_2px_15px_rgba(0,0,0,0.03)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] dark:hover:shadow-none hover:-translate-y-1.5 transition-all duration-500 flex flex-col relative overflow-hidden border border-gray-100 dark:border-slate-800"
+            data-name={res.name.toLowerCase()}
+            data-author={(res.author || 'andrew wang').toLowerCase()}
+            data-tags={tags.join(',').toLowerCase()}
+            data-likes={res.likes_count || 0}
+            data-time={new Date(res.created_at).getTime()}
+          >
+            <a href={`/resources/${res.id}`} aria-label={`Go to ${res.name}`} class="absolute inset-0 z-0"></a>
+            
+						<div class="flex items-center space-x-5 mb-6 relative z-10 pointer-events-none">
+							<div class="w-20 h-20 rounded-3xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 shadow-inner flex-shrink-0 flex items-center justify-center border border-gray-100 dark:border-slate-700 group-hover:scale-105 transition-transform duration-500">
+								{res.logo_url ? (
+									<img src={res.logo_url} alt="Resource Logo" class="w-full h-full object-cover" />
+								) : (
+									<span class="text-3xl font-black text-gray-200 dark:text-slate-600 tracking-tighter">{res.name.substring(0, 2).toUpperCase()}</span>
+								)}
+							</div>
+							<div class="flex-1 min-w-0">
+								<h3 class="text-xl font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate mb-1">{res.name}</h3>
+								<p class="text-[11px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-wider">{t['res.author']}：{res.author || 'Andrew Wang'}</p>
+							</div>
+						</div>
+
+						<p class="text-sm text-gray-500 dark:text-slate-400 flex-grow leading-relaxed mb-6 relative z-10 pointer-events-none">
+							{truncate(res.summary, 85)}
+						</p>
+
+            <div class="flex flex-wrap gap-2 mb-6 relative z-10 pointer-events-none">
+              {tags.slice(0, 3).map((tag: string) => (
+                <span class="text-[10px] font-bold px-3 py-1 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-400 rounded-full border border-gray-100 dark:border-slate-700 transition-colors group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:border-blue-100 dark:group-hover:border-blue-900/50">
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+						<div class="mt-auto flex items-center justify-between relative z-10 pointer-events-none pt-5 border-t border-gray-50 dark:border-slate-800">
+							<div class="flex items-center space-x-4">
+                <span class="flex items-center text-[11px] font-bold text-gray-400 dark:text-slate-500">
+                  <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  {new Date(res.created_at).toLocaleDateString('zh-CN')}
+                </span>
+                <span class="flex items-center text-[11px] font-bold text-gray-400 dark:text-slate-500">
+                  <svg class="w-3.5 h-3.5 mr-1.5 text-red-400 dark:text-red-500" fill="currentColor" viewBox="0 0 20 20"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"></path></svg>
+                  {res.likes_count || 0}
+                </span>
+              </div>
+							<span class="text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+							</span>
+						</div>
+					</div>
+				);
+			})}
+		</div>
+
+    <!-- Empty State -->
+    <div id="res-empty" class="hidden flex flex-col items-center justify-center py-32 bg-white dark:bg-slate-900 rounded-[3rem] border border-dashed border-gray-200 dark:border-slate-800">
+      <div class="w-20 h-20 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+        <svg class="w-10 h-10 text-gray-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      </div>
+      <p class="text-gray-900 dark:text-slate-100 font-bold text-xl">{t['res.no_results']}</p>
+      <p class="text-gray-400 dark:text-slate-500 text-sm mt-2">{t['res.try_again']}</p>
+    </div>
+
+    {resourcesList.length === 0 && (
+      <div class="flex flex-col items-center justify-center py-32 bg-white dark:bg-slate-900 rounded-[3rem] border border-dashed border-gray-200 dark:border-slate-800">
+        <div class="w-20 h-20 bg-gray-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+          <svg class="w-10 h-10 text-gray-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+        </div>
+        <p class="text-gray-900 dark:text-slate-100 font-bold text-xl">{t['res.empty_title']}</p>
+        <p class="text-gray-400 dark:text-slate-500 text-sm mt-2">{t['res.empty_desc']}</p>
+      </div>
+    )}
+	</div>
+</Layout>
+
+<script is:inline>
+  (function() {
+    const rSearchInput = document.getElementById('res-search-input');
+    const sortTrigger = document.getElementById('sort-trigger');
+    const sortMenu = document.getElementById('sort-menu');
+    const selectedLabel = document.getElementById('selected-sort-label');
+    const sortOpts = document.querySelectorAll('.sort-opt');
+    const resGrid = document.getElementById('res-grid');
+    const resCards = Array.from(document.querySelectorAll('.res-card'));
+    const emptyState = document.getElementById('res-empty');
+    
+    let currentSort = 'time-desc';
+
+    function updateDisplay() {
+      const query = rSearchInput.value.toLowerCase().trim();
+
+      // Filter
+      let visibleCards = resCards.filter(card => {
+        const name = card.dataset.name;
+        const author = card.dataset.author;
+        const tags = card.dataset.tags;
+        const match = name.includes(query) || author.includes(query) || tags.includes(query);
+        card.style.display = match ? '' : 'none';
+        return match;
+      });
+
+      // Sort
+      visibleCards.sort((a, b) => {
+        if (currentSort === 'time-desc') return b.dataset.time - a.dataset.time;
+        if (currentSort === 'time-asc') return a.dataset.time - b.dataset.time;
+        if (currentSort === 'likes-desc') return b.dataset.likes - a.dataset.likes;
+        if (currentSort === 'likes-asc') return a.dataset.likes - b.dataset.likes;
+        return 0;
+      });
+
+      // Re-append in order
+      visibleCards.forEach(card => resGrid.appendChild(card));
+
+      // Empty state
+      if (visibleCards.length === 0 && resCards.length > 0) {
+        emptyState.classList.remove('hidden');
+        resGrid.classList.add('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        resGrid.classList.remove('hidden');
+      }
+    }
+
+    // Custom Dropdown Logic
+    sortTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isHidden = sortMenu.classList.contains('hidden');
+      if(isHidden) {
+        sortMenu.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          sortMenu.classList.remove('opacity-0', 'translate-y-2');
+        });
+      } else {
+        closeMenu();
+      }
+    });
+
+    function closeMenu() {
+      sortMenu.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => sortMenu.classList.add('hidden'), 300);
+    }
+
+    document.addEventListener('click', () => closeMenu());
+
+    sortOpts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        currentSort = opt.dataset.value;
+        selectedLabel.textContent = opt.querySelector('span').textContent;
+        updateDisplay();
+        closeMenu();
+      });
+    });
+
+    rSearchInput.addEventListener('input', updateDisplay);
+  })();
+</script>
+

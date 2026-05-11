@@ -1,0 +1,157 @@
+---
+import { ui, defaultLang } from '../i18n/ui';
+
+interface Props {
+  lang: string;
+}
+const { lang } = Astro.props;
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+
+const reasons = [
+  { value: 'r1', label: t['complaint.r1'] },
+  { value: 'r2', label: t['complaint.r2'] },
+  { value: 'r3', label: t['complaint.r3'] },
+  { value: 'r4', label: t['complaint.r4'] },
+  { value: 'r5', label: t['complaint.r5'] },
+];
+---
+
+<div id="complaintModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-gray-900/40 backdrop-blur-sm transition-opacity">
+  <div class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 max-w-md w-full mx-4" id="complaintModalContent">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-100">{t['complaint.title']}</h3>
+      <button type="button" id="closeComplaintBtn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    
+    <div id="complaintAlert" class="hidden text-sm p-3 rounded-md mb-4 border"></div>
+
+    <form id="complaintForm" class="space-y-4">
+      <input type="hidden" id="complaintTargetType" name="target_type" value="" />
+      <input type="hidden" id="complaintTargetId" name="target_id" value="" />
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t['complaint.reason']} *</label>
+        <select id="complaintReason" name="reason" required class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100">
+          <option value="">-- Select --</option>
+          {reasons.map(r => (
+            <option value={r.value}>{r.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t['complaint.details']} *</label>
+        <textarea id="complaintDetails" name="details" required rows="4" maxlength="500" placeholder={t['complaint.details_placeholder']} class="w-full px-3 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 resize-none"></textarea>
+      </div>
+
+      <div class="cf-turnstile mt-2" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-callback="onComplaintTurnstileSuccess" data-expired-callback="onComplaintTurnstileExpired"></div>
+      
+      <div class="flex justify-end space-x-3 mt-4">
+        <button type="button" id="cancelComplaintBtn" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-md transition-colors">
+          {t['complaint.cancel']}
+        </button>
+        <button type="submit" id="submitComplaintBtn" disabled class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors shadow-sm">
+          {t['complaint.submit']}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script is:inline>
+  let complaintTurnstileToken = '';
+  
+  function onComplaintTurnstileSuccess(token) {
+    complaintTurnstileToken = token;
+    document.getElementById('submitComplaintBtn').disabled = false;
+  }
+  function onComplaintTurnstileExpired() {
+    complaintTurnstileToken = '';
+    document.getElementById('submitComplaintBtn').disabled = true;
+  }
+
+  // Define global function to open modal
+  window.openComplaintModal = function(type, id) {
+    if (!type || !id) return;
+    
+    // Dynamically load Turnstile to prevent WebGL GPU freeze on page load
+    if (!document.getElementById('turnstile-script')) {
+      const script = document.createElement('script');
+      script.id = 'turnstile-script';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    document.getElementById('complaintTargetType').value = type;
+    document.getElementById('complaintTargetId').value = id;
+    document.getElementById('complaintModal').classList.remove('hidden');
+    // Reset form and turnstile if available
+    document.getElementById('complaintForm').reset();
+    document.getElementById('complaintAlert').classList.add('hidden');
+    if (typeof turnstile !== 'undefined') {
+      try { turnstile.reset(); } catch(e){}
+    }
+    onComplaintTurnstileExpired();
+  };
+
+  const closeModal = () => document.getElementById('complaintModal').classList.add('hidden');
+  document.getElementById('closeComplaintBtn')?.addEventListener('click', closeModal);
+  document.getElementById('cancelComplaintBtn')?.addEventListener('click', closeModal);
+
+  document.getElementById('complaintForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitComplaintBtn');
+    const alertBox = document.getElementById('complaintAlert');
+    
+    if (!complaintTurnstileToken) return;
+
+    btn.disabled = true;
+    btn.classList.add('opacity-70');
+    alertBox.classList.add('hidden');
+
+    const formData = new FormData(e.target);
+    formData.set('cf-turnstile-response', complaintTurnstileToken);
+
+    try {
+      const res = await fetch('/api/complaints/submit', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        alertBox.className = 'text-sm p-3 rounded-md mb-4 border bg-green-50 border-green-200 text-green-700 dark:bg-green-900/30 dark:border-green-800 dark:text-green-400';
+        // Need to pass translation from Astro to JS, we'll use a hack or just hardcode for simplicity if we can't easily.
+        // Let's use the UI translated string if possible. We can inject it.
+        alertBox.innerHTML = window.__complaint_success || 'Submitted successfully.';
+        alertBox.classList.remove('hidden');
+        setTimeout(() => {
+          closeModal();
+        }, 2000);
+      } else {
+        alertBox.className = 'text-sm p-3 rounded-md mb-4 border bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400';
+        if (data.error === 'limit_exceeded') {
+          alertBox.innerHTML = window.__complaint_limit || 'Limit exceeded.';
+        } else {
+          alertBox.innerHTML = data.error || 'Submission failed.';
+        }
+        alertBox.classList.remove('hidden');
+        btn.disabled = false;
+        if (typeof turnstile !== 'undefined') {
+          try { turnstile.reset(); } catch(e){}
+        }
+      }
+    } catch (err) {
+      alertBox.className = 'text-sm p-3 rounded-md mb-4 border bg-red-50 border-red-200 text-red-700 dark:bg-red-900/30 dark:border-red-800 dark:text-red-400';
+      alertBox.innerHTML = 'Network error.';
+      alertBox.classList.remove('hidden');
+      btn.disabled = false;
+    } finally {
+      btn.classList.remove('opacity-70');
+    }
+  });
+</script>

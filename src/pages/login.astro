@@ -1,0 +1,295 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLangFromRequest } from '../utils/lang';
+import { ui, defaultLang } from '../i18n/ui';
+
+const lang = getLangFromRequest(Astro);
+const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+
+// For client-side
+const i18n = {
+  verifying: lang === 'zh' ? '验证中...' : 'Verifying...',
+  login: t['auth.login_btn'],
+  network_error: lang === 'zh' ? '网络连接异常，请重试' : 'Network error, please try again',
+  turnstile_error: lang === 'zh' ? '请先完成人机验证' : 'Please complete the Turnstile verification',
+  google_verifying: lang === 'zh' ? '正在验证 Google 账号...' : 'Verifying Google account...',
+  google_success: lang === 'zh' ? 'Google 登录成功！正在进入系统...' : 'Google login successful! Entering system...',
+  google_failed: lang === 'zh' ? 'Google 登录失败' : 'Google login failed',
+  login_success: t['auth.login_success'] || (lang === 'zh' ? '登录成功！即将进入系统...' : 'Login successful! Entering system...'),
+  server_error: lang === 'zh' ? '身份验证服务器响应异常' : 'Authentication server error'
+};
+
+const turnstileScript = '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>';
+---
+
+<Layout title={`${t['auth.login_title']} - Andrew.Dev`}>
+  <Fragment set:html={turnstileScript} />
+  <script is:inline src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <div id="errorModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-gray-900/40 backdrop-blur-sm transition-opacity">
+    <div class="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-xl border border-gray-100 dark:border-slate-800 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-200" id="errorModalContent">
+      <div class="flex items-center mb-3">
+        <div class="bg-red-50 dark:bg-red-900/30 p-1.5 rounded-full mr-2.5">
+          <svg class="w-5 h-5 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </div>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-slate-100">{t['auth.tip']}</h3>
+      </div>
+      <p id="errorModalText" class="text-gray-600 dark:text-slate-400 text-sm leading-relaxed mb-6 break-words"></p>
+      <div class="flex justify-end">
+        <button id="closeModalBtn" class="bg-blue-600 text-white px-4 py-1.5 text-sm font-medium rounded hover:bg-blue-700 transition-colors">
+          {t['auth.ok']}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-md mx-auto mt-14 bg-white dark:bg-slate-900 p-8 rounded-xl shadow-sm border border-gray-100 dark:border-slate-800">
+    <h1 class="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-slate-100">{t['auth.welcome_back']}</h1>
+    
+    <div id="success-message" class="hidden bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 font-medium p-3 rounded-md mb-5 text-sm border border-green-200 dark:border-green-900/50 text-center"></div>
+
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">{t['auth.email']}</label>
+        <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100" placeholder={t['auth.email_placeholder']} />
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">{t['auth.password']}</label>
+          <a href="#" class="text-xs text-blue-500 hover:text-blue-700 dark:hover:text-blue-400">{t['auth.forgot_password']}</a>
+        </div>
+        <input type="password" name="password" required class="w-full px-4 py-2 border border-gray-300 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100" />
+      </div>
+
+      <div class="flex items-start">
+        <div class="flex items-center h-5">
+          <input id="terms" name="terms" aria-label="Agree to Terms" type="checkbox" required class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 dark:border-slate-700 rounded cursor-pointer bg-white dark:bg-slate-800">
+        </div>
+        <div class="ml-3 text-xs">
+          <label for="terms" class="text-gray-500 dark:text-slate-400 cursor-pointer">
+            {t['auth.terms_agree_prefix']}
+            <a href="/terms" class="text-blue-600 dark:text-blue-400 hover:underline">{t['auth.terms']}</a>
+            {t['auth.terms_agree_and']}
+            <a href="/privacy" class="text-blue-600 dark:text-blue-400 hover:underline">{t['auth.privacy']}</a>
+          </label>
+        </div>
+      </div>
+
+      <div class="cf-turnstile mt-2" data-sitekey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY} data-callback="onTurnstileSuccess"></div>
+      <p id="turnstile-hint" class="text-xs text-red-500 dark:text-red-400 mt-1 hidden"></p>
+
+      <button type="submit" id="submitBtn" class="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-200 mt-6 shadow-sm hover:shadow-md">
+        {t['auth.login_btn']}
+      </button>
+    </form>
+
+    <div class="mt-6 flex items-center justify-between">
+      <hr class="w-full border-gray-200 dark:border-slate-800" />
+      <span class="p-2 text-gray-400 dark:text-slate-500 text-xs">OR</span>
+      <hr class="w-full border-gray-200 dark:border-slate-800" />
+    </div>
+
+    <div 
+      id="g_id_onload"
+      data-client_id={import.meta.env.PUBLIC_GOOGLE_CLIENT_ID}
+      data-callback="handleCredentialResponse"
+      data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin mt-4 flex justify-center"
+      data-type="standard"
+      data-size="large"
+      data-theme="outline"
+      data-text="continue_with"
+      data-shape="rectangular"
+      data-logo_alignment="left"
+      data-width="384">
+    </div>
+
+    <div class="mt-3 space-y-2.5">
+      <!-- GitHub Login Button -->
+      <a href="/api/auth/github" class="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-gray-900 hover:bg-black text-white dark:bg-slate-800 dark:hover:bg-slate-700 text-sm font-semibold rounded-md border border-transparent shadow-sm transition-all duration-200">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+        <span>{t['auth.login_with_github'] || '通过 GitHub 登录'}</span>
+      </a>
+
+      <!-- Passkey Login Button -->
+      <button type="button" id="btn-passkey-login" class="w-full flex items-center justify-center space-x-2 py-2.5 px-4 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-800 dark:text-slate-200 text-sm font-semibold rounded-md border border-gray-300 dark:border-slate-700 shadow-sm transition-all duration-200">
+        <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        <span>{t['auth.login_with_passkey'] || '使用通行密钥登录'}</span>
+      </button>
+    </div>
+
+    <div class="text-center mt-6 text-sm text-gray-600 dark:text-slate-400">
+      {t['auth.no_account']} <a href="/register" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">{t['auth.register_title']}</a>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ i18n }}>
+    const form = document.getElementById('loginForm');
+    const successDiv = document.getElementById('success-message');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    const errorModal = document.getElementById('errorModal');
+    const errorModalContent = document.getElementById('errorModalContent');
+    const errorModalText = document.getElementById('errorModalText');
+    const turnstileHint = document.getElementById('turnstile-hint');
+    
+    let turnstileToken = '';
+
+    window.onTurnstileSuccess = function(token) {
+      turnstileToken = token;
+      turnstileHint.classList.add('hidden');
+    };
+
+    function showError(msg) {
+      errorModalText.innerText = msg;
+      errorModal.classList.remove('hidden');
+      setTimeout(() => { errorModalContent.classList.replace('scale-95', 'scale-100'); }, 10);
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      errorModalContent.classList.replace('scale-100', 'scale-95');
+      setTimeout(() => { errorModal.classList.add('hidden'); }, 200);
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.innerText = i18n.verifying;
+
+      if (!turnstileToken) {
+        showError(i18n.turnstile_error);
+        submitBtn.disabled = false;
+        submitBtn.innerText = i18n.login;
+        return;
+      }
+
+      const formData = new FormData(form);
+      formData.set('cf-turnstile-response', turnstileToken);
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+          form.classList.add('hidden');
+          successDiv.innerText = i18n.login_success;
+          successDiv.classList.remove('hidden');
+          setTimeout(() => { window.location.href = result.redirectUrl; }, 1500);
+        } else {
+          showError(result.error);
+          if (typeof turnstile !== 'undefined') {
+            turnstile.reset();
+            turnstileToken = '';
+          }
+        }
+      } catch (err) {
+        showError(i18n.network_error);
+        if (typeof turnstile !== 'undefined') turnstile.reset();
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = i18n.login;
+      }
+    });
+
+    window.handleCredentialResponse = async (response) => {
+      submitBtn.disabled = true;
+      submitBtn.innerText = i18n.google_verifying;
+
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+          form.classList.add('hidden');
+          successDiv.innerText = i18n.google_success;
+          successDiv.classList.remove('hidden');
+          setTimeout(() => { window.location.href = '/'; }, 1000);
+        } else {
+          showError(result.error || i18n.google_failed);
+        }
+      } catch (err) {
+        showError(i18n.server_error);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = i18n.login;
+      }
+    };
+
+    // Passkey Login Handler
+    document.getElementById('btn-passkey-login')?.addEventListener('click', async () => {
+      if (!window.PublicKeyCredential) {
+        showError('当前浏览器或操作系统不支持通行密钥登录');
+        return;
+      }
+
+      try {
+        const optRes = await fetch('/api/auth/passkey/auth-options', { method: 'POST' });
+        const optData = await optRes.json();
+        if (!optData.success) {
+          showError(optData.error || '获取登录挑战码失败');
+          return;
+        }
+
+        const options = optData.options;
+        options.challenge = Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+
+        const assertion = await navigator.credentials.get({ publicKey: options });
+        if (!assertion) return;
+
+        function bufferToBase64Url(buf) {
+          const bytes = new Uint8Array(buf);
+          let binary = '';
+          for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+          return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        }
+
+        const verifyPayload = {
+          id: assertion.id,
+          rawId: bufferToBase64Url(assertion.rawId),
+          response: {
+            clientDataJSON: bufferToBase64Url(assertion.response.clientDataJSON),
+            authenticatorData: bufferToBase64Url(assertion.response.authenticatorData),
+            signature: bufferToBase64Url(assertion.response.signature),
+            userHandle: assertion.response.userHandle ? bufferToBase64Url(assertion.response.userHandle) : null
+          }
+        };
+
+        const verifyRes = await fetch('/api/auth/passkey/auth-verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(verifyPayload)
+        });
+
+        const verifyData = await verifyRes.json();
+        if (verifyRes.ok && verifyData.success) {
+          form.classList.add('hidden');
+          successDiv.innerText = '通行密钥验证成功！正在登录...';
+          successDiv.classList.remove('hidden');
+          setTimeout(() => { window.location.href = '/'; }, 800);
+        } else {
+          showError(verifyData.error || '通行密钥登录失败');
+        }
+      } catch (err) {
+        if (err.name !== 'NotAllowedError') {
+          showError('通行密钥验证失败: ' + err.message);
+        }
+      }
+    });
+
+    // Handle OAuth Callback errors in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error')) {
+      showError(decodeURIComponent(urlParams.get('error')));
+      history.replaceState(null, '', window.location.pathname);
+    }
+  </script>
+</Layout>
