@@ -1,43 +1,194 @@
-# Astro Starter Kit: Minimal
+# Andrew Wang Dev | Personal Blog & Edge Portfolio
 
-```sh
-npm create astro@latest -- --template minimal
-```
+[![Astro](https://img.shields.io/badge/Astro-5.0+-BC52EE?style=flat-square&logo=astro&logoColor=white)](https://astro.build)
+[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4+-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+> 🚀 **Live Site**: [https://andrewwangdev.com](https://andrewwangdev.com)  
+> 📦 **Repository**: [https://github.com/AndrewWangDev/My-Personal-Blog](https://github.com/AndrewWangDev/My-Personal-Blog)
 
-## 🚀 Project Structure
+An edge-native, high-performance personal blog, technical showcase, built with **Astro 5 (SSR)** and deployed to **Cloudflare Workers**. Powered by **Cloudflare D1** distributed SQLite database, **Cloudflare KV**, and **Tailwind CSS**.
+---
 
-Inside of your Astro project, you'll see the following folders and files:
+## 🌟 Key Architecture & Features
+
+### 1. 📰 Content & Ecosystem
+- **Technical Blog**: Markdown-driven articles with real-time comments, nested replies, bookmarking, and liking.
+- **Resource Center**: Curated tool showcase, downloads, external repositories, and tag-filtered indexing.
+- **Automated Daily Tech News**: Automated pipeline (`scripts/fetch-daily-news.mjs`) scheduled via GitHub Actions, using Google Gemini AI to synthesize, format, and publish daily technology news directly to Cloudflare D1.
+- **Interactive Guestbook**: Moderated community wall with rate limits and Turnstile bot challenge.
+- **Comprehensive Admin Dashboard** (`/admin`): Complete back-office management for articles, news, resources, user restrictions, and DMCA/complaint tickets.
+
+### 2. 🛡️ Security, SEO & Privacy Protection
+- **Bot Mitigation**: CAPTCHA protects login, registration, password modification, and ticket submission forms.
+- **Edge Rate Limiting**: In-memory leaky-bucket sliding window rate limiter at middleware layer (`src/middleware.ts`).
+- **DOM XSS Sanitization**: Strict HTML entity escaping for user comments, titles, and dynamic notification payloads.
+- **Anti-Scraping Email Protection**: Sitewide email addresses are dynamically assembled at runtime to block crawler scrapers.
+- **SEO & RSS**: Dynamic runtime XML Sitemap (`/sitemap.xml`) querying D1 directly, auto-generated RSS Feed (`/rss.xml`), and semantic meta tags.
+
+---
+
+## 📂 Project Directory Structure
 
 ```text
-/
-├── public/
+.
+├── .github/
+│   └── workflows/
+│       └── daily-news.yml        # Automated daily tech news ingestion cron
+├── public/                       # Static assets (favicons, manifests, PGP keys)
+├── scripts/
+│   └── fetch-daily-news.mjs      # Gemini-powered news scraper & edge ingestion
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── components/               # Reusable UI modules (Comments, Modals, Navbars)
+│   ├── i18n/
+│   │   └── ui.ts                 # Multilingual localization dictionaries (5 languages)
+│   ├── layouts/
+│   │   └── Layout.astro          # Global master layout, sticky header, drawer, and footer
+│   ├── pages/
+│   │   ├── api/                  # Edge API routes (Auth, Passkey, Admin, Comments, OAuth)
+│   │   ├── admin/                # Admin management console
+│   │   ├── blog/                 # Blog post dynamic routes (/blog/:id)
+│   │   ├── news/                 # News list & detail pages (/news/:id)
+│   │   ├── resources/            # Resource center & download details (/resources/:id)
+│   │   ├── about.astro           # Single-page A4 print-optimized developer portfolio
+│   │   ├── account.astro         # User settings, passkey & OAuth binding center
+│   │   ├── guestbook.astro       # Community guestbook
+│   │   ├── login.astro           # Unified login portal (Password, Passkey, OAuth)
+│   │   ├── register.astro        # User registration with email code verification
+│   │   ├── privacy.astro         # GDPR/CCPA Privacy Policy
+│   │   ├── terms.astro           # Terms of Service
+│   │   ├── robots.txt.ts         # Edge robots.txt crawler directive endpoint
+│   │   ├── rss.xml.ts            # Dynamic RSS 2.0 feed generator
+│   │   └── sitemap.xml.ts        # Dynamic D1-backed sitemap generator
+│   ├── styles/
+│   │   └── global.css            # Tailwind directives, animations, and print styling
+│   ├── utils/                    # Session signing, sanitization, WebAuthn, DB helpers
+│   └── middleware.ts             # Global rate-limiting, session validation, and i18n routing
+├── schema.sql                    # Cloudflare D1 SQLite database table schema
+├── astro.config.mjs              # Astro configuration & Cloudflare adapter setup
+├── wrangler.json                 # Cloudflare Workers bindings & D1 database mapping
+└── package.json                  # Dependencies & npm scripts
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+---
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 🛠️ Tech Stack Breakdown
 
-Any static assets, like images, can be placed in the `public/` directory.
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | [Astro 5](https://astro.build/) (`output: 'server'`) |
+| **Edge Runtime** | [Cloudflare Workers](https://workers.cloudflare.com/) via `@astrojs/cloudflare` |
+| **Database** | [Cloudflare D1](https://developers.cloudflare.com/d1/) (Distributed Serverless SQLite) |
+| **Session Cache** | [Cloudflare KV](https://developers.cloudflare.com/kv/) |
+| **Styling** | [Tailwind CSS](https://tailwindcss.com/) + `@tailwindcss/typography` |
+| **Bot Protection** | [Cloudflare Turnstile](https://www.cloudflare.com/application-services/products/turnstile/) |
+| **Email Service** | [Resend](https://resend.com/) |
+| **Type Safety** | [TypeScript](https://www.typescriptlang.org/) |
 
-## 🧞 Commands
+---
 
-All commands are run from the root of the project, from a terminal:
+## 🚀 Getting Started Locally
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+### 1. Prerequisites
+- **Node.js**: `>= 22.12.0`
+- **npm** or **pnpm**
+- **Cloudflare Wrangler CLI**: `npm install -g wrangler` (or via `npx wrangler`)
 
-## 👀 Want to learn more?
+### 2. Clone & Install Dependencies
+```bash
+git clone https://github.com/AndrewWangDev/My-Personal-Blog.git
+cd My-Personal-Blog
+npm install
+```
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+### 3. Configure Environment Variables
+Copy the example configuration templates:
+```bash
+# Frontend environment variables
+cp .env.example .env
+
+# Serverless Workers local secrets
+cp .dev.vars.example .dev.vars
+```
+
+Edit `.env` and `.dev.vars` with your respective API keys:
+- `PUBLIC_TURNSTILE_SITE_KEY`: Cloudflare Turnstile Site Key
+- `PUBLIC_GOOGLE_CLIENT_ID`: Google Cloud OAuth Web Client ID
+- `TURNSTILE_SECRET_KEY`: Cloudflare Turnstile Secret Key
+- `RESEND_API_KEY`: Resend API key for sending registration codes
+- `SESSION_SECRET`: Strong 32+ character random string for HMAC-SHA256 session signing
+- `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`: GitHub OAuth App credentials
+
+### 4. Initialize Local D1 Database
+Execute the database schema locally using Wrangler:
+```bash
+npx wrangler d1 execute DB --local --file=schema.sql
+```
+
+### 5. Launch Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:4321](http://localhost:4321) in your browser.
+
+---
+
+## 🚢 Production Deployment
+
+### 1. Initialize Cloudflare D1 Database (Remote)
+Create your D1 database on Cloudflare:
+```bash
+npx wrangler d1 create my_website_db
+```
+Update `wrangler.json` with the generated `database_id`, then apply the schema:
+```bash
+npx wrangler d1 execute DB --remote --file=schema.sql
+```
+
+### 2. Configure Cloudflare Secrets
+Set your production environment secrets via Wrangler:
+```bash
+npx wrangler secret put TURNSTILE_SECRET_KEY
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put SESSION_SECRET
+npx wrangler secret put GITHUB_CLIENT_ID
+npx wrangler secret put GITHUB_CLIENT_SECRET
+npx wrangler secret put CRON_SECRET
+```
+
+### 3. Build & Deploy
+```bash
+npm run build
+npx wrangler deploy
+```
+
+---
+
+## 📜 Database Schema Summary (`schema.sql`)
+
+The Cloudflare D1 database includes 12 core tables:
+- `users`: Core user accounts (email, password hash, role, provider, profile)
+- `deleted_users`: 30-day cool-down protection against email registration spam
+- `user_oauth`: Bound third-party accounts (Google, GitHub)
+- `passkey_credentials`: Registered WebAuthn FIDO2 public keys and counters
+- `comments`: Multi-level hierarchical discussions with soft deletion
+- `interactions`: Unified store for post likes, resource bookmarks, and news likes
+- `blog_posts`: Technical articles with Markdown text and summaries
+- `resources`: Developer software, tools, and downloadable packages
+- `news`: Automated daily technology news articles
+- `notifications`: System broadcast and user-targeted notifications
+- `complaints`: User ticket submissions and DMCA dispute records
+- `restrictions`: Rate-limiting rules and banned user records
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE). You are free to fork, adapt, and build upon it with attribution.
+
+---
+
+<p align="center">
+  Crafted with care by <a href="https://andrewwangdev.com">Andrew Wang Dev</a>.
+</p>

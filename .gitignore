@@ -44,10 +44,13 @@ pnpm-debug.log*
 # ==========================================
 # Editor & IDE Directories
 # ==========================================
+.vscode/
 .idea/
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
+.cursor/
+.fleet/
+.history/
+*.sublime-project
+*.sublime-workspace
 *.suo
 *.ntvs*
 *.njsproj

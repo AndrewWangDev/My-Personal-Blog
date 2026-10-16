@@ -95,10 +95,19 @@ const i18n = {
 };
 
 const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
+
+const googleLangMap: Record<string, string> = {
+  'zh': 'zh-CN',
+  'zh-tw': 'zh-TW',
+  'en': 'en',
+  'ja': 'ja',
+  'de': 'de'
+};
+const googleLang = googleLangMap[lang] || 'zh-CN';
 ---
 
 <Layout title={t['account.title'] + " | Andrew Wang Dev"}>
-  <script is:inline src="https://accounts.google.com/gsi/client" async defer></script>
+  <script is:inline src={`https://accounts.google.com/gsi/client?hl=${googleLang}`} async defer></script>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row min-h-[80vh] gap-8 relative">
     
     <aside class="w-full md:w-64 flex-shrink-0">
