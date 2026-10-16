@@ -239,7 +239,7 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
 					<a href="/terms" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t['footer.terms']}</a>
 					<button type="button" id="footer-contact-btn" aria-label="Contact Support" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-sm font-medium text-gray-500 dark:text-slate-400">{t['footer.contact']}</button>
 					<a href="/rss.xml" target="_blank" class="hover:text-orange-500 dark:hover:text-orange-400 transition-colors">RSS Feed</a>
-					<a href="/sitemap.xml" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Sitemap</a>
+					<a href="https://github.com/AndrewWangDev/My-Personal-Blog" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t['footer.source_code']}</a>
 					<a href="/publickey.asc" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">PGP Key</a>
 				</div>
 			</div>
@@ -604,7 +604,8 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
             document.body.removeChild(input);
           }
           if (window.showToast) {
-            window.showToast(`Email copied: ${email}`, 'success');
+            const msg = window.__toast_email_copied || 'Email copied: ';
+            window.showToast(`${msg}${email}`, 'success');
           }
         } catch (e) {
           if (window.showToast) {
@@ -613,9 +614,10 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
         }
       });
 		</script>
-    <script define:vars={{ complaintSuccessMsg: t['complaint.success'], complaintLimitMsg: t['complaint.limit'] }}>
+    <script define:vars={{ complaintSuccessMsg: t['complaint.success'], complaintLimitMsg: t['complaint.limit'], toastEmailCopiedMsg: t['toast.email_copied'] }}>
       window.__complaint_success = complaintSuccessMsg;
       window.__complaint_limit = complaintLimitMsg;
+      window.__toast_email_copied = toastEmailCopiedMsg;
     </script>
     <ComplaintModal lang={lang} />
     <button id="back-to-top" aria-label="Back to top" class="fixed bottom-8 right-8 p-3 bg-white dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-slate-700 shadow-md hover:shadow-lg border border-gray-100 dark:border-slate-700 rounded-full transition-all duration-300 opacity-0 pointer-events-none translate-y-4 z-50 group">

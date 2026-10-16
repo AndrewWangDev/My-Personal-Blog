@@ -39,7 +39,7 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
   </div>
 </Layout>
 
-<script is:inline>
+<script is:inline define:vars={{ toastEmailCopiedMsg: t['toast.email_copied'] }}>
   document.getElementById('contact-404-btn')?.addEventListener('click', async () => {
     const email = ['support', '@', 'andrewwangdev.com'].join('');
     try {
@@ -54,7 +54,8 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
         document.body.removeChild(input);
       }
       if (window.showToast) {
-        window.showToast(`Email copied: ${email}`, 'success');
+        const msg = toastEmailCopiedMsg || 'Email copied: ';
+        window.showToast(`${msg}${email}`, 'success');
       }
     } catch (e) {
       if (window.showToast) {
