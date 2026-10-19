@@ -44,6 +44,7 @@ const SKIP_DB_PREFIXES = [
   '/login',
   '/register',
   '/api/auth/login',
+  '/api/auth/logout',
   '/api/auth/register',
   '/api/auth/send-code',
   '/api/auth/passkey/auth-',

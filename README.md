@@ -167,19 +167,22 @@ npx wrangler deploy
 
 ## 📜 Database Schema Summary (`schema.sql`)
 
-The Cloudflare D1 database includes 12 core tables:
+The Cloudflare D1 database includes 15 core tables:
 - `users`: Core user accounts (email, password hash, role, provider, profile)
 - `deleted_users`: 30-day cool-down protection against email registration spam
-- `user_oauth`: Bound third-party accounts (Google, GitHub)
-- `passkey_credentials`: Registered WebAuthn FIDO2 public keys and counters
 - `comments`: Multi-level hierarchical discussions with soft deletion
 - `interactions`: Unified store for post likes, resource bookmarks, and news likes
-- `blog_posts`: Technical articles with Markdown text and summaries
 - `resources`: Developer software, tools, and downloadable packages
 - `news`: Automated daily technology news articles
+- `blog_posts`: Technical articles with Markdown text and summaries
 - `notifications`: System broadcast and user-targeted notifications
-- `complaints`: User ticket submissions and DMCA dispute records
-- `restrictions`: Rate-limiting rules and banned user records
+- `showcase`: Featured project hero banners and external portfolio showcases
+- `settings`: Key-value dynamic system configuration (e.g. daily complaint limits)
+- `complaints`: User ticket submissions, feedback, and DMCA dispute records
+- `user_passkeys`: Registered WebAuthn FIDO2 public keys, counters, and transport types
+- `user_oauth_accounts`: Bound third-party accounts (Google, GitHub)
+- `email_verifications`: Email one-time passcode (OTP) verification records
+- `email_logs`: Audit log for outbound email rate limiting and domain tracking
 
 ---
 

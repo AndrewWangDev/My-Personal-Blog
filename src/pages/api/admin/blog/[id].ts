@@ -1,7 +1,10 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 
-export const GET: APIRoute = async ({ params }) => {
+export const GET: APIRoute = async ({ params, locals }) => {
+  if (!locals.user || locals.user.role !== 'admin') {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+  }
   try {
     const db = env.DB;
     const post = await db.prepare('SELECT * FROM blog_posts WHERE id = ?').bind(params.id).first();
