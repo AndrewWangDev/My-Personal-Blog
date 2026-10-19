@@ -67,8 +67,10 @@ export const POST: APIRoute = async (context) => {
       return db.prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)").bind(key, String(value));
     });
 
-    await db.batch(statements);
-    return new Response(JSON.stringify({ success: true }));
+    if (statements.length > 0) {
+      await db.batch(statements);
+    }
+    return new Response(JSON.stringify({ success: true, message: '设置已保存' }));
   } catch (error: any) {
     console.error("Admin Settings POST Error:", error);
     return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), { status: 500 });

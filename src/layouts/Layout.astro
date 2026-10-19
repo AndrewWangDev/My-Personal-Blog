@@ -173,15 +173,20 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
           </div>
 
 					{isLoggedIn ? (
-						isAdmin ? (
-							<a href="/admin" class="hidden sm:flex items-center space-x-1.5 text-xs font-medium bg-gray-900 dark:bg-slate-800 text-white dark:text-slate-200 px-4 py-2 rounded-full hover:bg-gray-800 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition shadow-xl shadow-gray-200 dark:shadow-none whitespace-nowrap flex-shrink-0">
-								<span>{t['nav.admin']}</span>
-							</a>
-						) : (
-							<a href="/account" class="hidden sm:flex items-center space-x-1.5 text-xs font-medium bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 px-4 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-slate-700 transition shadow-sm whitespace-nowrap flex-shrink-0">
-								<span>{t['nav.account']}</span>
-							</a>
-						)
+            <div class="hidden sm:flex items-center space-x-2 flex-shrink-0">
+              {isAdmin ? (
+                <a href="/admin" class="flex items-center space-x-1.5 text-xs font-medium bg-gray-900 dark:bg-slate-800 text-white dark:text-slate-200 px-4 py-2 rounded-full hover:bg-gray-800 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition shadow-xl shadow-gray-200 dark:shadow-none whitespace-nowrap">
+                  <span>{t['nav.admin']}</span>
+                </a>
+              ) : (
+                <a href="/account" class="flex items-center space-x-1.5 text-xs font-medium bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 border border-gray-100 dark:border-slate-700 px-4 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-slate-700 transition shadow-sm whitespace-nowrap">
+                  <span>{t['nav.account']}</span>
+                </a>
+              )}
+              <button type="button" id="desktop-logout-btn" title={t['nav.logout'] || '退出登录'} aria-label="Log Out" class="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-full hover:bg-red-50 dark:hover:bg-red-950/40">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              </button>
+            </div>
 					) : (
 						<div class="hidden sm:flex items-center space-x-3 flex-shrink-0">
 							<a href="/login" class="text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition uppercase tracking-widest whitespace-nowrap">{t['nav.login']}</a>
@@ -219,9 +224,15 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
               <a href="/register" class="flex justify-center py-3 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase shadow-md">{t['nav.register']}</a>
             </div>
           ) : (
-            <a href={isAdmin ? "/admin" : "/account"} class="flex items-center justify-center space-x-2 py-4 bg-gray-900 dark:bg-slate-800 text-white dark:text-slate-200 rounded-2xl text-xs font-bold uppercase border border-transparent dark:border-slate-700 shadow-xl dark:shadow-none">
-               <span>{isAdmin ? t['nav.admin'] : t['nav.account']}</span>
-            </a>
+            <div class="space-y-2">
+              <a href={isAdmin ? "/admin" : "/account"} class="flex items-center justify-center space-x-2 py-3.5 bg-gray-900 dark:bg-slate-800 text-white dark:text-slate-200 rounded-2xl text-xs font-bold uppercase border border-transparent dark:border-slate-700 shadow-xl dark:shadow-none">
+                 <span>{isAdmin ? t['nav.admin'] : t['nav.account']}</span>
+              </a>
+              <button type="button" id="mobile-logout-btn" class="w-full flex items-center justify-center space-x-2 py-2.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <span>{t['nav.logout'] || '退出登录'}</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -613,6 +624,19 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
           }
         }
       });
+
+      // Global Logout Handler
+      const handleGlobalLogout = async () => {
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+          localStorage.removeItem('account_tab');
+          window.location.href = '/login';
+        } catch(e) {
+          window.location.href = '/login';
+        }
+      };
+      document.getElementById('desktop-logout-btn')?.addEventListener('click', handleGlobalLogout);
+      document.getElementById('mobile-logout-btn')?.addEventListener('click', handleGlobalLogout);
 		</script>
     <script define:vars={{ complaintSuccessMsg: t['complaint.success'], complaintLimitMsg: t['complaint.limit'], toastEmailCopiedMsg: t['toast.email_copied'] }}>
       window.__complaint_success = complaintSuccessMsg;

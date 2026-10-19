@@ -4,14 +4,7 @@ import { parseClientDataJSON } from '../../../../utils/webauthn';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   const db = (env as any).DB;
-  let user = locals.user;
-  if (!user) {
-    const sessionId = cookies.get('user_session')?.value;
-    if (sessionId && db) {
-      user = await db.prepare('SELECT id, username, email, role FROM users WHERE id = ?').bind(sessionId).first();
-    }
-  }
-
+  const user = locals.user;
   if (!user) {
     return new Response(JSON.stringify({ error: "请先登录" }), { status: 401 });
   }

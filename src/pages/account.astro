@@ -15,7 +15,7 @@ let userProfile = null;
 try {
   const db = env.DB;
   if (db) {
-    userProfile = await db.prepare('SELECT email, username FROM users WHERE id = ?').bind(Astro.locals.user.id).first();
+    userProfile = await db.prepare('SELECT email, username, password_hash FROM users WHERE id = ?').bind(Astro.locals.user.id).first();
   }
 } catch(e) {
   console.error("Failed to fetch user profile", e);
@@ -24,6 +24,8 @@ try {
 if (!userProfile) {
   return Astro.redirect('/login');
 }
+
+const hasPassword = Boolean(userProfile.password_hash);
 
 // Prepare i18n strings for client-side
 const i18n = {
@@ -38,6 +40,11 @@ const i18n = {
   pwd_updating: t['account.pwd_updating'],
   pwd_success: t['account.pwd_success'],
   update_pwd: t['account.update_pwd'],
+  set_pwd: t['account.set_pwd'] || '设置密码',
+  set_pwd_desc: t['account.set_pwd_desc'] || '您当前使用第三方账号登录，尚未设置独立登录密码。设置密码后可使用邮箱和密码直接登录，并可自由解绑第三方账号。',
+  pwd_set_success: t['account.pwd_set_success'] || '初始密码设置成功',
+  logout: t['nav.logout'] || '退出登录',
+  logout_confirm: t['account.logout_confirm'] || '确定要退出当前登录吗？',
   deleting: t['account.deleting'],
   delete_success: t['account.delete_success'],
   confirm_delete: t['account.confirm_delete'],
@@ -136,9 +143,15 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
 
     <main class="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 md:p-8">
       <div id="panel-account">
-        <div class="mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">{t['account.manage']}</h1>
-          <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{t['account.manage_desc']}</p>
+        <div class="mb-8 pb-4 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-slate-100">{t['account.manage']}</h1>
+            <p class="text-sm text-gray-500 dark:text-slate-400 mt-1">{t['account.manage_desc']}</p>
+          </div>
+          <button type="button" id="btn-logout-account" class="inline-flex items-center space-x-1.5 px-3.5 py-2 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 rounded-xl transition-all shadow-sm active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            <span>{t['nav.logout'] || '退出登录'}</span>
+          </button>
         </div>
 
         <div class="space-y-10 max-w-3xl">
@@ -240,9 +253,12 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
               {t['account.security']}
             </h2>
             <form id="password-form" class="space-y-6 bg-gray-50 dark:bg-slate-800 p-6 rounded-2xl border border-gray-100 dark:border-slate-700">
-              <div>
+              <div id="pwd-status-banner" class={hasPassword ? 'hidden' : 'p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-xl text-xs text-blue-800 dark:text-blue-300 leading-relaxed'}>
+                {t['account.set_pwd_desc'] || '您当前使用第三方账号登录，尚未设置独立登录密码。设置密码后可使用邮箱和密码直接登录，并可自由解绑第三方账号。'}
+              </div>
+              <div id="group-old-password" class={hasPassword ? '' : 'hidden'}>
                 <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">{t['account.current_pwd']} <span class="text-red-500">*</span></label>
-                <input type="password" name="oldPassword" aria-label="Old Password Input" required class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="password" name="oldPassword" id="acct-old-password" aria-label="Old Password Input" required={hasPassword} class="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">{t['account.new_pwd']} <span class="text-red-500">*</span></label>
@@ -260,7 +276,7 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
               </div>
 
               <div class="flex justify-end">
-                <button type="submit" id="btn-save-password" class="px-6 py-2.5 text-sm font-bold text-white bg-gray-800 dark:bg-slate-700 rounded-xl hover:bg-black dark:hover:bg-slate-600 shadow-sm transition-all active:scale-95">{t['account.update_pwd']}</button>
+                <button type="submit" id="btn-save-password" class="px-6 py-2.5 text-sm font-bold text-white bg-gray-800 dark:bg-slate-700 rounded-xl hover:bg-black dark:hover:bg-slate-600 shadow-sm transition-all active:scale-95">{hasPassword ? t['account.update_pwd'] : (t['account.set_pwd'] || '设置密码')}</button>
               </div>
             </form>
           </section>
@@ -426,7 +442,7 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
     })();
   </script>
 
-  <script define:vars={{ i18n, googleClientId }}>
+  <script define:vars={{ i18n, googleClientId, hasPassword }}>
     document.addEventListener('DOMContentLoaded', () => {
       // ===== Custom Dialog Modal System (Alert, Confirm, Prompt) =====
       const dialogModal = document.getElementById('custom-dialog-modal');
@@ -1089,14 +1105,37 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
         history.replaceState(null, '', window.location.pathname);
       }
 
+      // Logout button handler
+      document.getElementById('btn-logout-account')?.addEventListener('click', async () => {
+        const confirmed = await customConfirm(
+          i18n.notice || '提示',
+          i18n.logout_confirm || '确定要退出当前登录吗？',
+          i18n.logout || '退出登录',
+          'danger'
+        );
+        if (!confirmed) return;
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+          localStorage.removeItem('account_tab');
+          window.location.href = '/login';
+        } catch(e) {
+          window.location.href = '/login';
+        }
+      });
+
+      let userHasPassword = Boolean(hasPassword);
       const passwordForm = document.getElementById('password-form');
-      passwordForm.addEventListener('submit', async (e) => {
+      passwordForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btn-save-password');
         btn.disabled = true;
         btn.textContent = i18n.pwd_updating;
         const formData = new FormData(passwordForm);
         const payload = Object.fromEntries(formData.entries());
+        if (!userHasPassword) {
+          delete payload.oldPassword;
+        }
+
         try {
           const res = await fetch('/api/account/password', {
             method: 'PUT',
@@ -1105,8 +1144,16 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
           });
           const data = await res.json();
           if (data.success) {
-            if(window.showToast) window.showToast(i18n.pwd_success, 'success');
+            if(window.showToast) window.showToast(data.message || (userHasPassword ? i18n.pwd_success : (i18n.pwd_set_success || '密码设置成功')), 'success');
             passwordForm.reset();
+            userHasPassword = true;
+            document.getElementById('pwd-status-banner')?.classList.add('hidden');
+            const oldPwdGroup = document.getElementById('group-old-password');
+            if (oldPwdGroup) {
+              oldPwdGroup.classList.remove('hidden');
+              const oldPwdInput = document.getElementById('acct-old-password');
+              if (oldPwdInput) oldPwdInput.required = true;
+            }
           } else {
             if(window.showToast) window.showToast(data.error || i18n.update_failed, 'error');
           }
@@ -1114,7 +1161,7 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
           if(window.showToast) window.showToast(i18n.network_error, 'error');
         } finally {
           btn.disabled = false;
-          btn.textContent = i18n.update_pwd;
+          btn.textContent = userHasPassword ? i18n.update_pwd : (i18n.set_pwd || '设置密码');
         }
       });
 

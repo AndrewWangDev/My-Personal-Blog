@@ -1,9 +1,15 @@
 import type { APIRoute } from 'astro';
-import { generateSitemapXml } from '../utils/sitemap';
 
 export const GET: APIRoute = async () => {
   try {
-    const xml = await generateSitemapXml();
+    const today = new Date().toISOString().split('T')[0];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://andrewwangdev.com/sitemap.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>`.trim();
 
     return new Response(xml, {
       headers: {
@@ -13,6 +19,6 @@ export const GET: APIRoute = async () => {
     });
   } catch (error) {
     console.error("Sitemap index generation error:", error);
-    return new Response("Error generating sitemap", { status: 500 });
+    return new Response("Error generating sitemap index", { status: 500 });
   }
 };
