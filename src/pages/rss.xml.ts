@@ -41,7 +41,7 @@ export const GET: APIRoute = async () => {
   <channel>
     <title>Andrew Wang Dev</title>
     <link>${baseUrl}</link>
-    <description>Software Engineer specializing in Full-Stack development and Edge Security.</description>
+    <description>Software Engineer focused on Edge Computing &amp; Distributed AI. Currently working on Cloud-Native Architecture and Edge AI &amp; LLM. Open for internships.</description>
     <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
     ${items.map(item => `
     <item>

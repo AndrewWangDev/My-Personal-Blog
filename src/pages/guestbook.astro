@@ -8,7 +8,10 @@ const lang = getLangFromRequest(Astro);
 const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 ---
 
-<Layout title={`${t['guestbook.title']} - Andrew Wang Dev`}>
+<Layout 
+  title={`${t['seo.guestbook.title']} | Andrew Wang Dev`}
+  description={t['seo.guestbook.desc']}
+>
   <div class="max-w-4xl mx-auto">
     <div class="mb-10">
       <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight mb-3">{t['guestbook.title']}</h1>
