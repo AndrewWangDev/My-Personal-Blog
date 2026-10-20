@@ -16,7 +16,7 @@ An edge-native, high-performance personal blog, technical showcase, built with *
 ### 1. 📰 Content & Ecosystem
 - **Technical Blog**: Markdown-driven articles with real-time comments, nested replies, bookmarking, and liking.
 - **Resource Center**: Curated tool showcase, downloads, external repositories, and tag-filtered indexing.
-- **Automated Daily Tech News**: Automated pipeline (`scripts/fetch-daily-news.mjs`) scheduled via GitHub Actions, using Google Gemini AI to synthesize, format, and publish daily technology news directly to Cloudflare D1.
+- **Tech News Ingestion**: Curated tech news pipeline (`scripts/fetch-daily-news.mjs` via `npm run news:fetch` or Admin Dashboard), using Google Gemini AI to synthesize, format, and publish technology news directly to Cloudflare D1.
 - **Interactive Guestbook**: Moderated community wall with rate limits and Turnstile bot challenge.
 - **Comprehensive Admin Dashboard** (`/admin`): Complete back-office management for articles, news, resources, user restrictions, and DMCA/complaint tickets.
 
@@ -35,7 +35,7 @@ An edge-native, high-performance personal blog, technical showcase, built with *
 .
 ├── .github/
 │   └── workflows/
-│       └── daily-news.yml        # Automated daily tech news ingestion cron
+│       └── daily-news.yml        # Manual news ingestion workflow (workflow_dispatch)
 ├── public/                       # Static assets (favicons, manifests, PGP keys)
 ├── scripts/
 │   └── fetch-daily-news.mjs      # Gemini-powered news scraper & edge ingestion
