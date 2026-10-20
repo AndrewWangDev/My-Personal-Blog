@@ -1,7 +1,37 @@
 /**
- * Daily Tech / AI / Semiconductor News Scraper & Publisher
- * Automatically collects, filters, formats, and publishes 1 top news article daily.
+ * Tech / AI / Semiconductor News Scraper & Publisher
+ * Manually triggered news curation, filtering, AI formatting, and publishing.
  */
+
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Automatically load local .env or .dev.vars if present (for manual CLI runs)
+for (const envFile of ['.env', '.dev.vars']) {
+  try {
+    const envPath = path.resolve(process.cwd(), envFile);
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
+      for (const line of content.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx !== -1) {
+          const key = trimmed.slice(0, eqIdx).trim();
+          let val = trimmed.slice(eqIdx + 1).trim();
+          if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.slice(1, -1);
+          }
+          if (!process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      }
+    }
+  } catch {
+    // Ignore environment file read errors
+  }
+}
 
 const SITE_URL = process.env.SITE_URL || 'https://andrewwangdev.com';
 const CRON_SECRET = process.env.CRON_SECRET || '';
