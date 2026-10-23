@@ -39,8 +39,6 @@ const SKIP_DB_PREFIXES = [
   '/_astro/',
   '/favicon',
   '/robots.txt',
-  '/privacy',
-  '/terms',
   '/login',
   '/register',
   '/api/auth/login',
