@@ -9,62 +9,57 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 const content = {
   zh: {
     title: '隐私政策',
-    updateDate: '最后更新日期：2026年05月11日',
+    updateDate: '最后更新日期：2026年10月23日',
     sections: [
-      { h: '1. 引言', p: 'Andrew.Dev（以下简称“本网站”）尊重并保护您的个人隐私。本隐私政策旨在说明我们如何收集、使用和保护您的信息。本政策符合欧盟《通用数据保护条例》(GDPR) 和美国加州相关隐私法律（如 CCPA/CPRA）的要求。' },
-      { h: '2. 我们收集的信息', p: '<ul><li><strong>2.1 账户信息：</strong>当您注册账户时，我们会收集您的用户名、邮箱地址以及密码哈希值。</li><li><strong>2.2 验证数据：</strong>为防止恶意攻击和刷取额度，我们使用 Cloudflare Turnstile 服务，该服务可能会收集您的浏览器环境指纹及非身份识别性技术数据。</li><li><strong>2.3 交互数据：</strong>我们会记录您在本网站发表的评论内容、点赞记录以及收藏条目。</li></ul>' },
-      { h: '3. 数据处理的法律依据 (GDPR)', p: '我们根据以下法律依据处理您的个人数据：<ul><li><strong>履行合同：</strong>为您提供账户功能及资源管理服务所必须。</li><li><strong>正当利益：</strong>维护网站运行安全，防止恶意刷取 Cloudflare 免费计费额度。</li><li><strong>同意：</strong>当您自愿在个人中心填写非必填项或发表评论时。</li></ul>' },
-      { h: '4. 您的权利', p: '<ul><li><strong>访问与更正权：</strong>您有权查看并修改您的账户信息。</li><li><strong>删除权（被遗忘权）：</strong>您有权要求删除您的账户及相关数据。</li><li><strong>拒绝销售数据：</strong>根据 CCPA，本网站承诺绝不向任何第三方出售、租赁或披露您的个人数据用于商业目的。</li></ul>' },
-      { h: '5. 数据安全与留存', p: '我们使用 Cloudflare D1 数据库加密存储数据。除非法律要求或您主动要求删除，否则您的数据将一直保留至账户注销。<br/><br/><strong>特别说明（防滥用保护）：</strong>为防止恶意注册，当您注销账号后，我们会在专门的注销记录表中保存您的邮箱地址少量信息至少 1 个月，同一邮箱在一个月内仅能注册一次。当超出必要保护期限后，我们会彻底将其自动删除。' },
-      { h: '6. 联系我们', p: '如果您对本政策有任何疑问，请发送邮件至：<span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
+      { h: '1. 引言', p: 'Andrew.Dev（以下简称“本网站”）致力于保护您的数字隐私，我们坚持“数据最小化”原则，仅收集维持系统运行所必需的最少个人信息。我们承诺，绝对不会出于广告目的向任何第三方出售您的信息。' },
+      { h: '2. 我们收集的信息', p: '<ul><li><strong>2.1 账户信息：</strong>当您注册和登录账户时，我们会收集您的用户名、邮箱地址、GitHub ID、Google ID等信息。</li><li><strong>2.2 验证数据：</strong>为防止恶意攻击和刷取额度，我们可能会收集您的浏览器环境指纹及非身份识别性技术数据。</li><li><strong>2.3 交互数据：</strong>我们会记录您在本网站发表的评论内容、点赞记录以及收藏条目。</li></ul>' },
+      { h: '3. 数据处理的法律依据', p: '我们根据以下法律依据处理您的个人数据：<ul><li><strong>履行合同：</strong>为您提供账户功能及资源管理服务所必须。</li><li><strong>正当利益：</strong>维护网站运行安全，防范恶意攻击与刷量拦截。</li><li><strong>同意：</strong>当您自愿发表评论、点赞、收藏时。</li></ul>' },
+      { h: '4. 您的权利', p: '您对自己的数据拥有查看、更正、删除的权利。<ul><li><strong>4.1 查看与更正：</strong>您可以随时在“设置 - 账号信息”页面中查看或更正您的个人资料。</li><li><strong>4.2 授权管理：</strong>您可以随时在设置页解除绑定的第三方账号（如 GitHub / Google OAuth 解绑）。</li><li><strong>4.3 账号注销：</strong>您可以在“设置 - 账号信息”的底部选择注销账号。注销成功后，我们将在 24 小时内删除或匿名化您的个人信息。为维护系统正常运行、或相关法律法规有额外的存储期限约束的，我们将在保存期限结束后进行删除或匿名化。<br/><br/>为防止恶意注册，当您注销账号后，我们会在专门的注销记录表中暂时保存您的邮箱地址一段时间，当超出必要保护期限后，我们会将其删除。</li></ul>' },
+      { h: '5. 联系我们', p: '如果您对本政策有任何疑问，请发送邮件至：<span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
     ]
   },
   en: {
     title: 'Privacy Policy',
-    updateDate: 'Last updated: May 11, 2026',
+    updateDate: 'Last updated: October 23, 2026',
     sections: [
-      { h: '1. Introduction', p: 'Andrew.Dev (hereinafter "the Website") respects and protects your personal privacy. This Privacy Policy explains how we collect, use, and protect your information. This policy complies with the EU General Data Protection Regulation (GDPR) and California privacy laws (such as CCPA/CPRA).' },
-      { h: '2. Information We Collect', p: '<ul><li><strong>2.1 Account Information:</strong> When you register, we collect your username, email, and password hash.</li><li><strong>2.2 Verification Data:</strong> To prevent abuse, we use Cloudflare Turnstile, which may collect browser environment fingerprints and non-identifying technical data.</li><li><strong>2.3 Interaction Data:</strong> We record your comments, likes, and bookmarks on this website.</li></ul>' },
-      { h: '3. Legal Basis for Data Processing (GDPR)', p: 'We process your personal data based on:<ul><li><strong>Contract Fulfillment:</strong> Necessary to provide account functions and resource management services.</li><li><strong>Legitimate Interest:</strong> Maintaining website operation security and preventing malicious resource consumption.</li><li><strong>Consent:</strong> When you voluntarily fill in optional fields or post comments.</li></ul>' },
-      { h: '4. Your Rights', p: '<ul><li><strong>Right to Access and Correction:</strong> You have the right to view and modify your account info.</li><li><strong>Right to Erasure:</strong> You have the right to request deletion of your account and related data.</li><li><strong>No Sale of Data:</strong> Per CCPA, we commit to never sell, rent, or disclose your personal data to third parties for commercial purposes.</li></ul>' },
-      { h: '5. Data Security and Retention', p: 'We use Cloudflare D1 database for encrypted storage. Your data remains until account deletion unless required by law.<br/><br/><strong>Special Note (Abuse Protection):</strong> To prevent malicious registration, upon account deletion, we retain minimal email info for at least 1 month to enforce registration limits. This info is automatically deleted after the necessary protection period.' },
-      { h: '6. Contact Us', p: 'If you have questions about this policy, email: <span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
+      { h: '1. Introduction', p: 'Andrew.Dev (hereinafter "the Website") is dedicated to safeguarding your digital privacy. We adhere to the "data minimization" principle, collecting only the minimum personal information necessary to maintain system operations. We promise to never sell your information to any third party for advertising purposes.' },
+      { h: '2. Information We Collect', p: '<ul><li><strong>2.1 Account Information:</strong> When you register and sign in, we collect your username, email address, GitHub ID, Google ID, and related identifiers.</li><li><strong>2.2 Verification Data:</strong> To prevent malicious attacks and quota abuse, we may collect browser environment fingerprints and non-identifying technical data.</li><li><strong>2.3 Interaction Data:</strong> We record comments, likes, and bookmarks you submit on this website.</li></ul>' },
+      { h: '3. Legal Basis for Data Processing', p: 'We process your personal data based on the following legal grounds:<ul><li><strong>Contract Fulfillment:</strong> Necessary to provide account functions and resource management services.</li><li><strong>Legitimate Interest:</strong> Maintaining website security, preventing malicious attacks, and mitigating automated abuse.</li><li><strong>Consent:</strong> When you voluntarily post comments, like, or bookmark content.</li></ul>' },
+      { h: '4. Your Rights', p: 'You retain the right to view, correct, and delete your data.<ul><li><strong>4.1 Access and Correction:</strong> You can review or modify your profile anytime on the "Settings - Account Info" page.</li><li><strong>4.2 Authorization Management:</strong> You can unbind connected third-party accounts (e.g., GitHub / Google OAuth) anytime in Settings.</li><li><strong>4.3 Account Deletion:</strong> You may delete your account at the bottom of "Settings - Account Info". Upon successful deletion, your personal information will be deleted or anonymized within 24 hours. Where system maintenance or legal regulations require additional retention periods, data will be deleted or anonymized once that period expires.<br/><br/>To prevent fraudulent re-registration, after account deletion, minimal email address records are temporarily retained in a dedicated deletion log table and permanently deleted once the necessary protection period ends.</li></ul>' },
+      { h: '5. Contact Us', p: 'If you have questions about this policy, email: <span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
     ]
   },
   'zh-tw': {
     title: '隱私政策',
-    updateDate: '最後更新日期：2026年05月11日',
+    updateDate: '最後更新日期：2026年10月23日',
     sections: [
-      { h: '1. 引言', p: 'Andrew.Dev（以下簡稱「本網站」）尊重並保護您的個人隱私。本隱私政策旨在說明我們如何收集、使用和保護您的信息。本政策符合歐盟《通用數據保護條例》(GDPR) 和美國加州相關隱私法律（如 CCPA/CPRA）的要求。' },
-      { h: '2. 我們收集的信息', p: '<ul><li><strong>2.1 帳戶信息：</strong>當您註冊帳戶時，我們會收集您的用戶名、郵箱地址以及密碼哈希值。</li><li><strong>2.2 驗證數據：</strong>為防止惡意攻擊和刷取額度，我們使用 Cloudflare Turnstile 服務，該服務可能會收集您的瀏覽器環境指紋及非身份識別性技術數據。</li><li><strong>2.3 交互數據：</strong>我們會記錄您在本網站發表的評論內容、點讚記錄以及收藏條目。</li></ul>' },
-      { h: '3. 數據處理的法律依據 (GDPR)', p: '我們根據以下法律依據處理您的個人數據：<ul><li><strong>履行合同：</strong>為您提供帳戶功能及資源管理服務所必須。</li><li><strong>正當利益：</strong>維護網站運行安全，防止惡意刷取 Cloudflare 免費計費額度。</li><li><strong>同意：</strong>當您自願在個人中心填寫非必填項或發表評論時。</li></ul>' },
-      { h: '4. 您的權利', p: '<ul><li><strong>訪問與更正權：</strong>您有權查看並修改您的帳戶信息。</li><li><strong>刪除權（被遺忘權）：</strong>您有權要求刪除您的帳戶及相關數據。</li><li><strong>拒絕銷售數據：</strong>根據 CCPA，本網站承諾絕不向任何第三方出售、租賃或披露您的個人數據用於商業目的。</li></ul>' },
-      { h: '5. 數據安全與留存', p: '我們使用 Cloudflare D1 數據庫加密存儲數據。除非法律要求或您主動要求刪除，否則您的數據將一直保留至帳戶註銷。<br/><br/><strong>特別說明（防濫用保護）：</strong>為防止惡意註冊，當您註銷帳號後，我們會在專門的註銷記錄表中保存您的郵箱地址少量信息至少 1 個月，同一郵箱在一個月內僅能註冊一次。當超出必要保護期限後，我們會徹底將其自動刪除。' },
-      { h: '6. 聯繫我們', p: '如果您對本政策有任何疑問，請發送郵件至：<span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
+      { h: '1. 引言', p: 'Andrew.Dev（以下簡稱「本網站」）致力於保護您的數位隱私，我們堅持「資料最小化」原則，僅收集維持系統運作所必需的最少個人資訊。我們承諾，絕對不會出於廣告目的向任何第三方出售您的資訊。' },
+      { h: '2. 我們收集的資訊', p: '<ul><li><strong>2.1 帳戶資訊：</strong>當您註冊和登入帳戶時，我們會收集您的使用者名稱、電子郵件地址、GitHub ID、Google ID 等資訊。</li><li><strong>2.2 驗證數據：</strong>為防止惡意攻擊和刷取額度，我們可能會收集您的瀏覽器環境指紋及非身分識別性技術數據。</li><li><strong>2.3 互動數據：</strong>我們會記錄您在本網站發表的評論內容、點讚記錄以及收藏項目。</li></ul>' },
+      { h: '3. 資料處理的法律依據', p: '我們根據以下法律依據處理您的個人資料：<ul><li><strong>履行契約：</strong>為您提供帳戶功能及資源管理服務所必需。</li><li><strong>正當利益：</strong>維護網站運作安全，防範惡意攻擊與刷量攔截。</li><li><strong>同意：</strong>當您自願發表評論、點讚、收藏時。</li></ul>' },
+      { h: '4. 您的權利', p: '您對自己的資料擁有檢視、更正、刪除的權利。<ul><li><strong>4.1 檢視與更正：</strong>您可以隨時在「設定 - 帳號資訊」頁面中檢視或更正您的個人資料。</li><li><strong>4.2 授權管理：</strong>您可以隨時在設定頁解除綁定的第三方帳號（如 GitHub / Google OAuth 解綁）。</li><li><strong>4.3 帳號註銷：</strong>您可以在「設定 - 帳號資訊」的底部選擇註銷帳號。註銷成功後，我們將在 24 小時內刪除或匿名化您的個人資訊。為維護系統正常運作、或相關法律法規有額外的儲存期限約束的，我們將在保存期限結束後進行刪除或匿名化。<br/><br/>為防止惡意註冊，當您註銷帳號後，我們會在專門的註銷記錄表中暫時保存您的電子郵件地址一段時間，當超出必要保護期限後，我們會將其刪除。</li></ul>' },
+      { h: '5. 聯繫我們', p: '如果您對本政策有任何疑問，請發送電子郵件至：<span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
     ]
   },
   ja: {
     title: 'プライバシーポリシー',
-    updateDate: '最終更新日：2026年05月11日',
+    updateDate: '最終更新日：2026年10月23日',
     sections: [
-      { h: '1. はじめに', p: 'Andrew.Dev（以下「当サイト」）は、ユーザーのプライバシーを尊重し、保護します。このプライバシーポリシーでは、情報の収集、使用、および保護の方法について説明します。本ポリシーは、EUの一般データ保護規則（GDPR）およびカリフォルニア州のプライバシー法（CCPA/CPRAなど）に準拠しています。' },
-      { h: '2. 収集する情報', p: '<ul><li><strong>2.1 アカウント情報：</strong>登録時にユーザー名、メールアドレス、パスワードハッシュを収集します。</li><li><strong>2.2 検証データ：</strong>不正利用防止のためCloudflare Turnstileを使用しており、ブラウザ環境の指紋や非識別技術データが収集される場合があります。</li><li><strong>2.3 インタラクションデータ：</strong>当サイトでのコメント、いいね、ブックマークを記録します。</li></ul>' },
-      { h: '3. データ処理の法的根拠 (GDPR)', p: '以下の理由に基づきデータを処理します：<ul><li><strong>契約履行：</strong>アカウント機能およびリソース管理サービスの提供に必要です。</li><li><strong>正当な利益：</strong>サイトの安全運用および不正利用防止のため。</li><li><strong>同意：</strong>任意項目への入力やコメント投稿時に同意を得たものとみなします。</li></ul>' },
-      { h: '4. あなたの権利', p: '<ul><li><strong>アクセスと訂正：</strong>アカウント情報の確認と修正が可能です。</li><li><strong>消去権（忘れられる権利）：</strong>アカウントと関連データの削除をリクエストできます。</li><li><strong>データの販売拒否：</strong>CCPAに基づき、当サイトが個人データを第三者に販売することはありません。</li></ul>' },
-      { h: '5. セキュリティと保持', p: 'Cloudflare D1で暗号化して保存します。アカウント削除まで保持されますが、法的に必要な場合はその限りではありません。<br/><br/><strong>不正利用防止について：</strong>アカウント削除後も、悪意のある再登録を防ぐため、最小限のメール情報を1ヶ月間保持します。この情報は期間経過後に自動削除されます。' },
-      { h: '6. お問い合わせ', p: 'ご不明な点はメールでお問い合わせください：<span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
+      { h: '1. はじめに', p: 'Andrew.Dev（以下「当サイト」）は、お客様のデジタルプライバシーの保護に努めており、「データ最小化」の原則を遵守し、システムの運用に必要な最小限の個人情報のみを収集します。広告目的で第三者にお客様の情報を販売することは決してありません。' },
+      { h: '2. 収集する情報', p: '<ul><li><strong>2.1 アカウント情報：</strong>登録およびログイン時に、ユーザー名、メールアドレス、GitHub ID、Google IDなどの情報を収集します。</li><li><strong>2.2 検証データ：</strong>悪意のある攻撃や割り当ての不正利用を防ぐため、ブラウザ環境のフィンガープリントおよび非識別技術データを収集する場合があります。</li><li><strong>2.3 インタラクションデータ：</strong>当サイトに投稿されたコメント、いいね、ブックマークの記録を保存します。</li></ul>' },
+      { h: '3. データ処理の法的根拠', p: '以下の法的根拠に基づき個人データを処理します：<ul><li><strong>契約の履行：</strong>アカウント機能およびリソース管理サービスの提供に必要な場合。</li><li><strong>正当な利益：</strong>サイトの安全な運用、不正攻撃の防止、および不正利用対策のため。</li><li><strong>同意：</strong>コメントの投稿、いいね、ブックマークを自発的に行う場合。</li></ul>' },
+      { h: '4. あなたの権利', p: 'お客様はご自身のデータに対して、閲覧、訂正、削除を行う権利を有します。<ul><li><strong>4.1 閲覧と訂正：</strong>「設定 - アカウント情報」ページで、いつでもプロフィールを確認・修正できます。</li><li><strong>4.2 連携管理：</strong>設定ページから、連携済みのサードパーティアカウント（GitHub / Google OAuthなど）をいつでも解除できます。</li><li><strong>4.3 アカウント削除：</strong>「設定 - アカウント情報」の下部からアカウント削除を選択できます。削除後、24時間以内にお客様の個人情報を削除または匿名化します。法的要件等により保持が義務付けられている場合は、期間満了後に削除または匿名化されます。<br/><br/>不正再登録を防止するため、アカウント削除後も専用ログテーブルに一定期間メールアドレスを保持し、必要保持期間の経過後に完全に削除します。</li></ul>' },
+      { h: '5. お問い合わせ', p: '本ポリシーについてご不明な点がございましたら、メールでお問い合わせください：<span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
     ]
   },
   de: {
     title: 'Datenschutzerklärung',
-    updateDate: 'Zuletzt aktualisiert: 11. Mai 2026',
+    updateDate: 'Zuletzt aktualisiert: 23. Oktober 2026',
     sections: [
-      { h: '1. Einleitung', p: 'Andrew.Dev (im Folgenden "die Website") respektiert und schützt Ihre Privatsphäre. Diese Datenschutzerklärung erläutert, wie wir Ihre Daten erheben, verwenden und schützen. Diese Richtlinie entspricht der EU-Datenschutz-Grundverordnung (DSGVO) und den kalifornischen Datenschutzgesetzen (wie CCPA/CPRA).' },
-      { h: '2. Informationen, die wir sammeln', p: '<ul><li><strong>2.1 Kontoinformationen:</strong> Bei der Registrierung erfassen wir Benutzername, E-Mail und Passwort-Hash.</li><li><strong>2.2 Verifizierungsdaten:</strong> Zur Missbrauchsprävention nutzen wir Cloudflare Turnstile, das Browser-Fingerprints und technische Daten erfassen kann.</li><li><strong>2.3 Interaktionsdaten:</strong> Wir protokollieren Kommentare, Likes und Lesezeichen auf dieser Website.</li></ul>' },
-      { h: '3. Rechtsgrundlage für die Verarbeitung (DSGVO)', p: 'Wir verarbeiten Daten basierend auf:<ul><li><strong>Vertragserfüllung:</strong> Notwendig für Kontofunktionen und Ressourcenverwaltung.</li><li><strong>Berechtigtes Interesse:</strong> Sicherheit des Website-Betriebs und Prävention von Missbrauch.</li><li><strong>Einwilligung:</strong> Bei freiwilligen Angaben oder Kommentaren.</li></ul>' },
-      { h: '4. Ihre Rechte', p: '<ul><li><strong>Auskunft und Berichtigung:</strong> Sie können Ihre Kontodaten einsehen und ändern.</li><li><strong>Löschung:</strong> Sie können die Löschung Ihres Kontos verlangen.</li><li><strong>Kein Verkauf von Daten:</strong> Gemäß CCPA verkaufen oder vermieten wir keine persönlichen Daten an Dritte.</li></ul>' },
-      { h: '5. Datensicherheit und Aufbewahrung', p: 'Wir nutzen Cloudflare D1 zur verschlüsselten Speicherung. Daten bleiben bis zur Kontolöschung gespeichert, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.<br/><br/><strong>Hinweis zum Missbrauchsschutz:</strong> Nach der Löschung speichern wir minimale E-Mail-Daten für 1 Monat, um Missbrauch zu verhindern. Diese werden danach automatisch gelöscht.' },
-      { h: '6. Kontakt', p: 'Bei Fragen senden Sie eine E-Mail an: <span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
+      { h: '1. Einleitung', p: 'Andrew.Dev (im Folgenden "die Website") setzt sich für den Schutz Ihrer digitalen Privatsphäre ein. Wir befolgen das Prinzip der "Datenminimierung" und erfassen nur die minimalen personenbezogenen Daten, die für den Betrieb des Systems erforderlich sind. Wir versichern, dass wir Ihre Daten niemals zu Werbezwecken an Dritte verkaufen.' },
+      { h: '2. Informationen, die wir sammeln', p: '<ul><li><strong>2.1 Kontoinformationen:</strong> Bei der Registrierung und Anmeldung erfassen wir Ihren Benutzernamen, Ihre E-Mail-Adresse, GitHub-ID, Google-ID usw.</li><li><strong>2.2 Verifizierungsdaten:</strong> Zur Abwehr böswilliger Angriffe und zur Verhinderung von Missbrauch erfassen wir möglicherweise Browser-Fingerabdrücke und nicht-identifizierende technische Daten.</li><li><strong>2.3 Interaktionsdaten:</strong> Wir protokollieren Ihre Kommentare, Likes und Lesezeichen auf dieser Website.</li></ul>' },
+      { h: '3. Rechtsgrundlage für die Datenverarbeitung', p: 'Wir verarbeiten Ihre personenbezogenen Daten auf Grundlage folgender Rechtsgrundlagen:<ul><li><strong>Vertragserfüllung:</strong> Erforderlich zur Bereitstellung der Kontofunktionen und Ressourcenverwaltung.</li><li><strong>Berechtigtes Interesse:</strong> Gewährleistung der Betriebssicherheit sowie Schutz vor Angriffen und Missbrauch.</li><li><strong>Einwilligung:</strong> Wenn Sie freiwillig Kommentare abgeben, liken oder Lesezeichen setzen.</li></ul>' },
+      { h: '4. Ihre Rechte', p: 'Sie haben das Recht auf Auskunft, Berichtigung und Löschung Ihrer Daten.<ul><li><strong>4.1 Auskunft und Berichtigung:</strong> Sie können Ihre Profildaten jederzeit unter "Einstellungen - Kontoinformationen" einsehen und bearbeiten.</li><li><strong>4.2 Autorisierungsverwaltung:</strong> Sie können verknüpfte Drittanbieterkonten (z. B. GitHub / Google OAuth) jederzeit in den Einstellungen trennen.</li><li><strong>4.3 Kontolöschung:</strong> Sie können Ihr Konto am Ende der Seite "Einstellungen - Kontoinformationen" löschen. Nach erfolgreicher Löschung werden Ihre Daten innerhalb von 24 Stunden gelöscht oder anonymisiert. Sofern gesetzliche Aufbewahrungsfristen bestehen, erfolgt die Löschung nach Ablauf dieser Fristen.<br/><br/>Zur Verhinderung von Missbrauch speichern wir Ihre E-Mail-Adresse nach der Kontolöschung vorübergehend in einer gesonderten Tabelle. Nach Ablauf der Schutzfrist wird sie endgültig gelöscht.</li></ul>' },
+      { h: '5. Kontakt', p: 'Bei Fragen zu dieser Datenschutzerklärung senden Sie eine E-Mail an: <span class="contact-email-trigger font-mono font-medium text-blue-600 dark:text-blue-400 cursor-pointer underline decoration-dotted" title="Click to copy email">support@andrewwangdev.com</span>' }
     ]
   }
 };
@@ -75,8 +70,7 @@ const cur = content[lang as keyof typeof content] || content.zh;
 <Layout title={`${cur.title} | Andrew Wang Dev`}>
   <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pb-24">
     <div class="mb-12 border-b border-gray-100 dark:border-slate-800 pb-8 text-center">
-      <h1 class="text-4xl font-black text-gray-900 dark:text-slate-100 tracking-tight mb-4 uppercase">{cur.title}</h1>
-      <p class="text-lg text-gray-500 dark:text-slate-400 font-medium">{t['footer.privacy']}</p>
+      <h1 class="text-4xl font-black text-gray-900 dark:text-slate-100 tracking-tight uppercase">{cur.title}</h1>
     </div>
 
     <article class="prose prose-blue prose-lg dark:prose-invert max-w-none bg-white dark:bg-slate-900 p-8 md:p-12 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800">
@@ -119,5 +113,3 @@ const cur = content[lang as keyof typeof content] || content.zh;
     });
   });
 </script>
-
-
