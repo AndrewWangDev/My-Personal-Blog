@@ -562,8 +562,6 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
 					} catch (e) {}
 				}
 			};
-				setTimeout(() => document.getElementById('noti-detail-modal').classList.remove('opacity-0'), 10);
-			};
 
 			document.getElementById('noti-detail-close')?.addEventListener('click', () => {
 				document.getElementById('noti-detail-modal').classList.add('opacity-0');
