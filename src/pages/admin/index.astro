@@ -5,6 +5,7 @@ import { ui, defaultLang } from '../../i18n/ui';
 
 const lang = getLangFromRequest(Astro);
 const t = ui[lang as keyof typeof ui] || ui[defaultLang];
+const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k]) => k.startsWith('admin.'))));
 ---
 
 <Layout title="Admin Dashboard | Andrew Wang Dev">
@@ -59,7 +60,7 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
     </aside>
 
   
-  <script define:vars={{ adminI18n: JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k]) => k.startsWith('admin.')))) }}>
+  <script define:vars={{ adminI18n }}>
     window.__ADMIN_I18N__ = JSON.parse(adminI18n);
   </script>
   <script is:inline>
@@ -161,10 +162,6 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
     </div>
   </div>
 
-
-  <script define:vars={{ adminI18n: JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k]) => k.startsWith('admin.')))) }}>
-    window.__ADMIN_I18N__ = JSON.parse(adminI18n);
-  </script>
   <script is:inline>
     document.addEventListener('DOMContentLoaded', () => {
       const i18n = window.__ADMIN_I18N__ || {};
