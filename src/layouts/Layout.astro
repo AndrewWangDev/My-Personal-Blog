@@ -249,7 +249,7 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
 				<div class="flex justify-center space-x-6 text-sm font-medium text-gray-500 dark:text-slate-400">
 					<a href="/privacy" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t['footer.privacy']}</a>
 					<a href="/terms" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t['footer.terms']}</a>
-					<button type="button" id="footer-contact-btn" aria-label="Contact Support" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-sm font-medium text-gray-500 dark:text-slate-400">{t['footer.contact']}</button>
+					<button type="button" id="footer-contact-btn" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer bg-transparent border-none p-0 text-sm font-medium text-gray-500 dark:text-slate-400">{t['footer.contact']}</button>
 					<a href="/rss.xml" target="_blank" class="hover:text-orange-500 dark:hover:text-orange-400 transition-colors">RSS Feed</a>
 					<a href="https://github.com/AndrewWangDev/My-Personal-Blog" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{t['footer.source_code']}</a>
 					<a href="/publickey.asc" target="_blank" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">PGP Key</a>

@@ -32,7 +32,7 @@ try {
       <div class="flex flex-col md:flex-row gap-4 h-auto md:h-[320px]">
         {/* Left Side: Hero Item (1/2 width) */}
         {showcase.length > 0 && (
-          <a href={showcase[0].link_url} target="_blank" aria-label={`${t['home.read_more']}: ${showcase[0].title || ''}`} class="group relative overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 border border-white/10 md:w-1/2 h-[200px] md:h-full flex-shrink-0 block">
+          <a href={showcase[0].link_url} target="_blank" aria-label={showcase[0].title ? `${t['home.read_more']}: ${showcase[0].title}` : t['home.try_now']} class="group relative overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 border border-white/10 md:w-1/2 h-[200px] md:h-full flex-shrink-0 block">
             <img src={showcase[0].image_url} alt="Showcase Hero" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" fetchpriority="high" decoding="async" />
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
             <div class="absolute bottom-6 right-6">
@@ -48,7 +48,7 @@ try {
         {showcase.length > 1 && (
           <div class="grid grid-cols-2 gap-4 w-full md:w-1/2 h-[200px] sm:h-[240px] md:h-full">
             {showcase.slice(1, 5).map((item) => (
-              <a href={item.link_url} target="_blank" aria-label={`${t['home.read_more']}: ${item.title || ''}`} class="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-white/10 h-full w-full block">
+              <a href={item.link_url} target="_blank" aria-label={item.title ? `${t['home.read_more']}: ${item.title}` : t['home.read_more']} class="group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 border border-white/10 h-full w-full block">
                 <img src={item.image_url} alt="Showcase Sub" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" decoding="async" />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-3 sm:p-4">
                   <span class="inline-flex items-center space-x-1 sm:space-x-2 bg-white/20 backdrop-blur-md border border-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold transition-all shadow-md group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:bg-blue-600/80 group-hover:border-blue-500/50">
@@ -78,23 +78,23 @@ try {
     ) : (
       <div class="grid gap-6">
         {posts.map((post) => (
-          <a href={`/blog/${post.id}`} aria-label={`${t['home.read_more']}: ${post.title}`} class="group block bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-md transition-all overflow-hidden">
-            <div class="flex flex-col-reverse sm:flex-row">
-              <div class="flex-1 p-6">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2">{post.title}</h2>
+          <a href={`/blog/${post.id}`} aria-label={post.title} class="group block bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-md transition-all overflow-hidden">
+            <div class="flex flex-col-reverse sm:flex-row sm:items-center justify-between">
+              <div class="flex-1 p-6 min-w-0">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2 line-clamp-2">{post.title}</h2>
                 <div class="flex items-center space-x-3 text-xs text-gray-500 dark:text-slate-400 mb-3">
                   <span>{post.author || 'Andrew Wang'}</span>
                   <span>·</span>
                   <span>{`${new Date(post.created_at).getFullYear()}/${new Date(post.created_at).getMonth() + 1}/${new Date(post.created_at).getDate()}`}</span>
                 </div>
-                {post.summary && <p class="text-gray-600 dark:text-slate-400 text-sm line-clamp-2">{post.summary}</p>}
+                {post.summary && <p class="text-gray-600 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed">{post.summary}</p>}
                 <div class="mt-4 text-blue-600 dark:text-blue-400 text-sm font-medium group-hover:translate-x-1 transition-transform inline-flex items-center">
                   {t['home.read_more']} <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 </div>
               </div>
               {post.thumbnail_url && (
-                <div class="sm:w-48 md:w-56 flex-shrink-0 aspect-video sm:aspect-[4/3]">
-                  <img src={post.thumbnail_url} alt="Blog Cover" class="w-full h-full object-cover sm:rounded-r-2xl" decoding="async" />
+                <div class="w-full sm:w-72 md:w-80 lg:w-96 flex-shrink-0 aspect-video overflow-hidden bg-gray-100 dark:bg-slate-800 sm:rounded-xl sm:mr-5 sm:my-auto">
+                  <img src={post.thumbnail_url} alt={post.title} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" decoding="async" />
                 </div>
               )}
             </div>
