@@ -139,6 +139,26 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
         </form>
       </div>
     </div>
+
+    <!-- Admin Custom Confirm Modal -->
+    <div id="admin-confirm-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-200">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" id="admin-confirm-overlay"></div>
+      <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 p-6 md:p-8 max-w-sm w-full mx-4 relative z-10 transform scale-95 transition-transform duration-200 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 border border-rose-100 dark:border-rose-900/40 flex items-center justify-center mx-auto mb-4 shadow-sm">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+        </div>
+        <h3 id="admin-confirm-title" class="text-lg font-bold text-gray-900 dark:text-slate-100 mb-2">{t['admin.confirm_modal_title']}</h3>
+        <p id="admin-confirm-message" class="text-sm text-gray-500 dark:text-slate-400 mb-6 leading-relaxed"></p>
+        <div class="flex items-center space-x-3">
+          <button type="button" id="admin-confirm-cancel" class="flex-1 py-2.5 px-4 text-sm font-semibold text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+            {t['admin.btn_cancel']}
+          </button>
+          <button type="button" id="admin-confirm-ok" class="flex-1 py-2.5 px-4 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md shadow-rose-600/20 active:scale-95 transition-all">
+            {t['admin.btn_confirm_delete']}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
 
@@ -157,6 +177,44 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
       const modalContent = modal.querySelector('.modal-content');
       const form = document.getElementById('data-form');
       const formContainer = document.getElementById('form-fields-container');
+
+      function showAdminConfirm({ title, message, confirmText }) {
+        return new Promise((resolve) => {
+          const cModal = document.getElementById('admin-confirm-modal');
+          const cModalContent = cModal.querySelector('div.bg-white');
+          const titleEl = document.getElementById('admin-confirm-title');
+          const msgEl = document.getElementById('admin-confirm-message');
+          const okBtn = document.getElementById('admin-confirm-ok');
+          const cancelBtn = document.getElementById('admin-confirm-cancel');
+          const overlay = document.getElementById('admin-confirm-overlay');
+
+          titleEl.textContent = title || i18n['admin.confirm_modal_title'] || '确认删除';
+          msgEl.textContent = message || '';
+          if (confirmText) okBtn.textContent = confirmText;
+
+          const close = (result) => {
+            cModal.classList.add('opacity-0');
+            cModalContent.classList.add('scale-95');
+            setTimeout(() => {
+              cModal.classList.add('hidden');
+              okBtn.onclick = null;
+              cancelBtn.onclick = null;
+              overlay.onclick = null;
+              resolve(result);
+            }, 200);
+          };
+
+          okBtn.onclick = () => close(true);
+          cancelBtn.onclick = () => close(false);
+          overlay.onclick = () => close(false);
+
+          cModal.classList.remove('hidden');
+          requestAnimationFrame(() => {
+            cModal.classList.remove('opacity-0');
+            cModalContent.classList.remove('scale-95');
+          });
+        });
+      }
       let usersList = [];
       async function fetchUsers() {
         if(usersList.length > 0) return usersList;
@@ -440,7 +498,12 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
               confirmMsg = i18n['admin.confirm_delete_news'];
               url = `/api/admin/news/${id}`;
             }
-            if(confirm(confirmMsg)) {
+            const isConfirmed = await showAdminConfirm({
+              title: i18n['admin.confirm_modal_title'] || '确认删除',
+              message: confirmMsg,
+              confirmText: i18n['admin.btn_confirm_delete'] || '确认删除'
+            });
+            if(isConfirmed) {
               try {
                 const res = await fetch(url, { method: 'DELETE' });
                 const data = await res.json();

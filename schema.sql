@@ -88,6 +88,18 @@ CREATE TABLE IF NOT EXISTS notifications (
     FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- 7.1 用户通知已读记录表
+CREATE TABLE IF NOT EXISTS notification_reads (
+    user_id TEXT NOT NULL,
+    notification_id INTEGER NOT NULL,
+    read_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, notification_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (notification_id) REFERENCES notifications(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_notification_reads_user ON notification_reads(user_id);
+
 -- 8. 橱窗展示表
 CREATE TABLE IF NOT EXISTS showcase (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
