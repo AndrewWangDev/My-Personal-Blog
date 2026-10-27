@@ -66,15 +66,24 @@ export const POST: APIRoute = async (context) => {
     const lang = cookies.get('lang')?.value || 'zh';
     const t = templates[lang] || templates.zh;
 
-    // 0. Verify Turnstile
-    const verifyData = new FormData();
+    // 0. 检查是否在限制封禁名单中
+    const restricted = await db.prepare("SELECT email FROM deleted_users WHERE email = ? AND expires_at > datetime('now')").bind(email).first();
+    if (restricted) {
+      return new Response(JSON.stringify({ error: "该邮箱处于系统限制封禁期内，无法发送验证码" }), { status: 403 });
+    }
+
+    // 1. Verify Turnstile (使用官方推荐的 URLSearchParams 格式与客户端 IP)
     const turnstileSecret = (import.meta.env as any).TURNSTILE_SECRET_KEY || (cfEnv as any).TURNSTILE_SECRET_KEY;
-    verifyData.append('secret', turnstileSecret);
-    verifyData.append('response', turnstileResponse);
+    const verifyParams = new URLSearchParams();
+    verifyParams.append('secret', turnstileSecret);
+    verifyParams.append('response', turnstileResponse);
+    const clientIp = request.headers.get('CF-Connecting-IP') || '';
+    if (clientIp) verifyParams.append('remoteip', clientIp);
     
     const turnstileCheck = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
-      body: verifyData,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: verifyParams,
     });
     const turnstileOutcome = await turnstileCheck.json() as any;
     if (!turnstileOutcome.success) {

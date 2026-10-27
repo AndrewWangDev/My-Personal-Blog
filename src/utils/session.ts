@@ -26,11 +26,12 @@ async function getHmacKey(secret: string): Promise<CryptoKey> {
 
 /**
  * 创建防篡改的签名 Session Token
- * 格式: <userId>.<timestamp>.<signatureHex>
+ * 格式: <userId>.<timestamp>.<tokenVersion>.<signatureHex>
  */
-export async function createSignedSession(userId: string, secret: string): Promise<string> {
+export async function createSignedSession(userId: string, secret: string, tokenVersion = 1): Promise<string> {
   const timestamp = Date.now().toString();
-  const payload = `${userId}.${timestamp}`;
+  const versionStr = String(tokenVersion || 1);
+  const payload = `${userId}.${timestamp}.${versionStr}`;
   const key = await getHmacKey(secret);
   const signature = await crypto.subtle.sign('HMAC', key, textEncoder.encode(payload));
   const sigHex = Array.from(new Uint8Array(signature))
@@ -39,36 +40,69 @@ export async function createSignedSession(userId: string, secret: string): Promi
   return `${payload}.${sigHex}`;
 }
 
+export interface VerifiedSession {
+  userId: string;
+  tokenVersion: number;
+}
+
 /**
- * 校验 Session Token 并解析出合法的 userId
+ * 校验 Session Token 并解析出合法的 userId 与 tokenVersion
+ * 支持 4 段式 (新规范带版本号) 与 3 段式 (老规范平滑过渡)
  * 若签名无效、格式错误或超过有效期，则返回 null
  */
 export async function verifySignedSession(
   token: string | undefined | null,
   secret: string,
   maxAgeMs = 7 * 24 * 60 * 60 * 1000 // 默认 7 天有效
-): Promise<string | null> {
+): Promise<VerifiedSession | null> {
   if (!token || typeof token !== 'string') return null;
   const parts = token.split('.');
-  if (parts.length !== 3) return null;
-  const [userId, timestampStr, sigHex] = parts;
-  const timestamp = parseInt(timestampStr, 10);
-  if (isNaN(timestamp) || Date.now() - timestamp > maxAgeMs) {
-    return null; // 已过期
-  }
-  const payload = `${userId}.${timestampStr}`;
-  const sigBytes = sigHex.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16));
-  if (!sigBytes || sigBytes.length !== 32) return null;
-  
+  if (parts.length !== 3 && parts.length !== 4) return null;
+
   try {
     const key = await getHmacKey(secret);
-    const isValid = await crypto.subtle.verify(
-      'HMAC',
-      key,
-      new Uint8Array(sigBytes),
-      textEncoder.encode(payload)
-    );
-    return isValid ? userId : null;
+
+    if (parts.length === 4) {
+      const [userId, timestampStr, versionStr, sigHex] = parts;
+      const timestamp = parseInt(timestampStr, 10);
+      if (isNaN(timestamp) || Date.now() - timestamp > maxAgeMs) {
+        return null;
+      }
+      const tokenVersion = parseInt(versionStr, 10);
+      if (isNaN(tokenVersion) || tokenVersion < 1) {
+        return null;
+      }
+
+      const payload = `${userId}.${timestampStr}.${versionStr}`;
+      const sigBytes = sigHex.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16));
+      if (!sigBytes || sigBytes.length !== 32) return null;
+
+      const isValid = await crypto.subtle.verify(
+        'HMAC',
+        key,
+        new Uint8Array(sigBytes),
+        textEncoder.encode(payload)
+      );
+      return isValid ? { userId, tokenVersion } : null;
+    } else {
+      // 3 parts (legacy token: userId.timestamp.sig)
+      const [userId, timestampStr, sigHex] = parts;
+      const timestamp = parseInt(timestampStr, 10);
+      if (isNaN(timestamp) || Date.now() - timestamp > maxAgeMs) {
+        return null;
+      }
+      const payload = `${userId}.${timestampStr}`;
+      const sigBytes = sigHex.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16));
+      if (!sigBytes || sigBytes.length !== 32) return null;
+
+      const isValid = await crypto.subtle.verify(
+        'HMAC',
+        key,
+        new Uint8Array(sigBytes),
+        textEncoder.encode(payload)
+      );
+      return isValid ? { userId, tokenVersion: 1 } : null;
+    }
   } catch (err) {
     console.error('Session signature verification error:', err);
     return null;

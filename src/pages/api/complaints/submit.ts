@@ -23,17 +23,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: "请完成人机验证" }), { status: 400 });
     }
 
-    // 1. 验证 Turnstile
+    // 1. 验证 Turnstile (使用官方推荐的 URLSearchParams 格式与客户端 IP)
     const turnstileSecret = (env as any).TURNSTILE_SECRET_KEY;
     if (!turnstileSecret) {
       return new Response(JSON.stringify({ error: "服务器安全配置未就绪 (Missing Turnstile Secret)" }), { status: 500 });
     }
-    const verifyData = new FormData();
-    verifyData.append('secret', turnstileSecret);
-    verifyData.append('response', turnstileResponse);
+    const verifyParams = new URLSearchParams();
+    verifyParams.append('secret', turnstileSecret);
+    verifyParams.append('response', turnstileResponse);
+    const clientIp = request.headers.get('CF-Connecting-IP') || '';
+    if (clientIp) verifyParams.append('remoteip', clientIp);
+
     const turnstileCheck = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
-      body: verifyData,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: verifyParams,
     });
     const turnstileOutcome = await turnstileCheck.json();
     if (!turnstileOutcome.success) {

@@ -80,11 +80,23 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       return new Response(JSON.stringify({ error: "数据库连接不可用" }), { status: 500 });
     }
 
+    // 检查账号封禁限制
+    const restricted = await db.prepare(
+      "SELECT email FROM deleted_users WHERE email = ? AND expires_at > datetime('now')"
+    ).bind(email.toLowerCase()).first();
+
+    if (restricted) {
+      return new Response(JSON.stringify({ 
+        error: "该账号目前处于封禁限制状态，无法登录或注册" 
+      }), { status: 403 });
+    }
+
     const sessionSecret = getSessionSecret(env);
     const currentSessionId = cookies.get('user_session')?.value;
     let currentUserId = locals.user?.id;
     if (!currentUserId && currentSessionId) {
-      currentUserId = await verifySignedSession(currentSessionId, sessionSecret);
+      const verified = await verifySignedSession(currentSessionId, sessionSecret);
+      currentUserId = verified?.userId;
     }
 
     // A. 如果是已登录用户在个人中心发起【绑定 Google】操作
@@ -126,9 +138,18 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     ).bind('google', googleId).first();
 
     if (linkedAccount) {
-      const user = await db.prepare('SELECT id, username, role FROM users WHERE id = ?').bind(linkedAccount.user_id).first();
+      const user = await db.prepare(`
+        SELECT u.id, u.username, u.role, u.token_version,
+               (SELECT 1 FROM deleted_users d WHERE (d.email = u.email OR d.email = ?) AND d.expires_at > datetime('now')) as is_restricted
+        FROM users u WHERE u.id = ?
+      `).bind(email.toLowerCase(), linkedAccount.user_id).first();
+
       if (user) {
-        const sessionToken = await createSignedSession(user.id, sessionSecret);
+        if (user.is_restricted) {
+          return new Response(JSON.stringify({ error: "该账号目前处于封禁限制状态，无法登录" }), { status: 403 });
+        }
+
+        const sessionToken = await createSignedSession(user.id, sessionSecret, (user as any).token_version || 1);
         cookies.set('user_session', sessionToken, {
           path: '/',
           httpOnly: true,
@@ -140,15 +161,23 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
         return new Response(JSON.stringify({ 
           success: true, 
           message: "Google 登录成功", 
-          user 
+          user: { id: user.id, username: user.username, role: user.role } 
         }), { status: 200 });
       }
     }
 
     // 规则 (3): 如果没有关联，检查用户邮箱是否为某一个账号的邮箱？若是，使用此账号登录；并将第三方账号ID绑定到此账号
-    const userByEmail = await db.prepare('SELECT id, username, role FROM users WHERE email = ?').bind(email).first();
+    const userByEmail = await db.prepare(`
+      SELECT u.id, u.username, u.role, u.token_version,
+             (SELECT 1 FROM deleted_users d WHERE d.email = u.email AND d.expires_at > datetime('now')) as is_restricted
+      FROM users u WHERE u.email = ?
+    `).bind(email).first();
 
     if (userByEmail) {
+      if (userByEmail.is_restricted) {
+        return new Response(JSON.stringify({ error: "该账号目前处于封禁限制状态，无法登录" }), { status: 403 });
+      }
+
       // 检查该 Google ID 是否已经被别人绑定（防御性校验）
       const conflictCheck = await isOAuthBoundToAnotherUser(db, 'google', googleId, userByEmail.id);
       if (conflictCheck.conflict) {
@@ -166,7 +195,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
           provider_email = excluded.provider_email
       `).bind(userByEmail.id, googleId, email).run();
 
-      const sessionToken = await createSignedSession(userByEmail.id, sessionSecret);
+      const sessionToken = await createSignedSession(userByEmail.id, sessionSecret, (userByEmail as any).token_version || 1);
       cookies.set('user_session', sessionToken, {
         path: '/',
         httpOnly: true,
@@ -178,7 +207,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       return new Response(JSON.stringify({ 
         success: true, 
         message: "Google 登录成功并已自动关联账户", 
-        user: userByEmail 
+        user: { id: userByEmail.id, username: userByEmail.username, role: userByEmail.role } 
       }), { status: 200 });
     }
 
@@ -188,8 +217,8 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     await db.batch([
       db.prepare(`
-        INSERT INTO users (id, username, email, role, created_at)
-        VALUES (?, ?, ?, 'user', CURRENT_TIMESTAMP)
+        INSERT INTO users (id, username, email, role, token_version, created_at)
+        VALUES (?, ?, ?, 'user', 1, CURRENT_TIMESTAMP)
       `).bind(newUserId, newUsername, email),
       db.prepare(`
         INSERT INTO user_oauth_accounts (user_id, provider, provider_user_id, provider_email)
@@ -199,7 +228,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
 
     const newUser = { id: newUserId, username: newUsername, role: 'user' };
 
-    const sessionToken = await createSignedSession(newUser.id, sessionSecret);
+    const sessionToken = await createSignedSession(newUser.id, sessionSecret, 1);
     cookies.set('user_session', sessionToken, {
       path: '/',
       httpOnly: true,

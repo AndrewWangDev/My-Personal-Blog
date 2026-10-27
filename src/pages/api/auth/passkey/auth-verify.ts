@@ -91,13 +91,22 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .bind(newCounter, id).run();
 
     // 5. Query user profile and issue session cookie
-    const user = await db.prepare('SELECT id, username, role FROM users WHERE id = ?').bind(passkey.user_id).first();
+    const user = await db.prepare(`
+      SELECT u.id, u.username, u.role, u.token_version,
+             (SELECT 1 FROM deleted_users d WHERE d.email = u.email AND d.expires_at > datetime('now')) as is_restricted
+      FROM users u WHERE u.id = ?
+    `).bind(passkey.user_id).first();
+
     if (!user) {
       return new Response(JSON.stringify({ error: "关联用户不存在" }), { status: 404 });
     }
 
+    if (user.is_restricted) {
+      return new Response(JSON.stringify({ error: "该账号目前处于封禁限制状态，无法登录" }), { status: 403 });
+    }
+
     const sessionSecret = getSessionSecret(env);
-    const sessionToken = await createSignedSession(user.id as string, sessionSecret);
+    const sessionToken = await createSignedSession(user.id as string, sessionSecret, (user as any).token_version || 1);
     cookies.set('user_session', sessionToken, {
       path: '/',
       httpOnly: true,
@@ -109,7 +118,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(JSON.stringify({
       success: true,
       message: "通行密钥登录成功",
-      user
+      user: { id: user.id, username: user.username, role: user.role }
     }), { status: 200 });
 
   } catch (err: any) {
