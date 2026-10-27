@@ -1,6 +1,6 @@
 # Andrew Wang Dev | Personal Blog & Edge Portfolio
 
-[![Astro](https://img.shields.io/badge/Astro-5.0+-BC52EE?style=flat-square&logo=astro&logoColor=white)](https://astro.build)
+[![Astro](https://img.shields.io/badge/Astro-6.0+-BC52EE?style=flat-square&logo=astro&logoColor=white)](https://astro.build)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.4+-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
@@ -8,7 +8,7 @@
 > 🚀 **Live Site**: [https://andrewwangdev.com](https://andrewwangdev.com)  
 > 📦 **Repository**: [https://github.com/AndrewWangDev/My-Personal-Blog](https://github.com/AndrewWangDev/My-Personal-Blog)
 
-An edge-native, high-performance personal blog, technical showcase, built with **Astro 5 (SSR)** and deployed to **Cloudflare Workers**. Powered by **Cloudflare D1** distributed SQLite database, **Cloudflare KV**, and **Tailwind CSS**.
+An edge-native, high-performance personal blog and technical showcase, built with **Astro 6 (SSR)** and deployed to **Cloudflare Workers**. Powered by **Cloudflare D1** distributed SQLite database, stateless signed cookie sessions, and **Tailwind CSS**.
 ---
 
 ## 🌟 Key Architecture & Features
@@ -20,12 +20,13 @@ An edge-native, high-performance personal blog, technical showcase, built with *
 - **Interactive Guestbook**: Moderated community wall with rate limits and Turnstile bot challenge.
 - **Comprehensive Admin Dashboard** (`/admin`): Complete back-office management for articles, news, resources, user restrictions, and DMCA/complaint tickets.
 
-### 2. 🛡️ Security, SEO & Privacy Protection
-- **Bot Mitigation**: CAPTCHA protects login, registration, password modification, and ticket submission forms.
-- **Edge Rate Limiting**: In-memory leaky-bucket sliding window rate limiter at middleware layer (`src/middleware.ts`).
-- **DOM XSS Sanitization**: Strict HTML entity escaping for user comments, titles, and dynamic notification payloads.
+### 2. 🛡️ Security, Authentication & Privacy Protection
+- **Biometric Passwordless Auth (Passkeys & WebAuthn / FIDO2)**: Hardware-backed secure login (Touch ID, Face ID, Windows Hello) using native Web Crypto API with anti-replay signature counters.
+- **Bot Mitigation**: Cloudflare Turnstile protects login, registration, password modification, and ticket submission forms.
+- **Edge Rate Limiting**: In-memory sliding-window rate limiter in middleware (`src/middleware.ts`) with admin bypass.
+- **DOM XSS Sanitization**: Strict HTML entity escaping for user comments, admin forms, and dynamic notification payloads.
 - **Anti-Scraping Email Protection**: Sitewide email addresses are dynamically assembled at runtime to block crawler scrapers.
-- **SEO & RSS**: Dynamic runtime XML Sitemap (`/sitemap.xml`) querying D1 directly, auto-generated RSS Feed (`/rss.xml`), and semantic meta tags.
+- **SEO & Multilingual RSS**: Dynamic runtime XML Sitemap (`/sitemap.xml`) querying D1 directly, auto-generated RSS Feed (`/rss.xml`), native 5-language i18n support, and semantic meta tags.
 
 ---
 
@@ -51,9 +52,11 @@ An edge-native, high-performance personal blog, technical showcase, built with *
 │   │   ├── blog/                 # Blog post dynamic routes (/blog/:id)
 │   │   ├── news/                 # News list & detail pages (/news/:id)
 │   │   ├── resources/            # Resource center & download details (/resources/:id)
+│   │   ├── 404.astro             # Custom localized 404 error page
 │   │   ├── about.astro           # Single-page A4 print-optimized developer portfolio
 │   │   ├── account.astro         # User settings, passkey & OAuth binding center
 │   │   ├── guestbook.astro       # Community guestbook
+│   │   ├── index.astro           # Homepage & featured technical showcases
 │   │   ├── login.astro           # Unified login portal (Password, Passkey, OAuth)
 │   │   ├── register.astro        # User registration with email code verification
 │   │   ├── privacy.astro         # GDPR/CCPA Privacy Policy
@@ -77,10 +80,10 @@ An edge-native, high-performance personal blog, technical showcase, built with *
 
 | Layer | Technology |
 | :--- | :--- |
-| **Framework** | [Astro 5](https://astro.build/) (`output: 'server'`) |
+| **Framework** | [Astro 6](https://astro.build/) (`output: 'server'`) |
 | **Edge Runtime** | [Cloudflare Workers](https://workers.cloudflare.com/) via `@astrojs/cloudflare` |
 | **Database** | [Cloudflare D1](https://developers.cloudflare.com/d1/) (Distributed Serverless SQLite) |
-| **Session Cache** | [Cloudflare KV](https://developers.cloudflare.com/kv/) |
+| **Session & Auth** | Stateless HMAC-SHA256 Signed Cookies + [Cloudflare D1](https://developers.cloudflare.com/d1/) |
 | **Styling** | [Tailwind CSS](https://tailwindcss.com/) + `@tailwindcss/typography` |
 | **Bot Protection** | [Cloudflare Turnstile](https://www.cloudflare.com/application-services/products/turnstile/) |
 | **Email Service** | [Resend](https://resend.com/) |
@@ -119,6 +122,8 @@ Edit `.env` and `.dev.vars` with your respective API keys:
 - `RESEND_API_KEY`: Resend API key for sending registration codes
 - `SESSION_SECRET`: Strong 32+ character random string for HMAC-SHA256 session signing
 - `GITHUB_CLIENT_ID` & `GITHUB_CLIENT_SECRET`: GitHub OAuth App credentials
+- `GEMINI_API_KEY`: Google AI Studio API Key (for automated tech news synthesis)
+- `CRON_SECRET`: Secret token for authenticating news ingestion webhooks
 
 ### 4. Initialize Local D1 Database
 Execute the database schema locally using Wrangler:
@@ -167,7 +172,7 @@ npx wrangler deploy
 
 ## 📜 Database Schema Summary (`schema.sql`)
 
-The Cloudflare D1 database includes 15 core tables:
+The Cloudflare D1 database includes 16 core tables:
 - `users`: Core user accounts (email, password hash, role, provider, profile)
 - `deleted_users`: 30-day cool-down protection against email registration spam
 - `comments`: Multi-level hierarchical discussions with soft deletion
@@ -176,6 +181,7 @@ The Cloudflare D1 database includes 15 core tables:
 - `news`: Automated daily technology news articles
 - `blog_posts`: Technical articles with Markdown text and summaries
 - `notifications`: System broadcast and user-targeted notifications
+- `notification_reads`: Per-user read receipt tracking for system broadcasts
 - `showcase`: Featured project hero banners and external portfolio showcases
 - `settings`: Key-value dynamic system configuration (e.g. daily complaint limits)
 - `complaints`: User ticket submissions, feedback, and DMCA dispute records
@@ -188,7 +194,7 @@ The Cloudflare D1 database includes 15 core tables:
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE). You are free to fork, adapt, and build upon it with attribution.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT). You are free to fork, adapt, and build upon it with attribution.
 
 ---
 
