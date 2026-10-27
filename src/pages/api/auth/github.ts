@@ -60,8 +60,20 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
     };
   }
 
+  // 检查账号封禁限制
+  const restricted = await db.prepare(
+    "SELECT email FROM deleted_users WHERE email = ? AND expires_at > datetime('now')"
+  ).bind(primaryVerifiedEmail.toLowerCase()).first();
+
+  if (restricted) {
+    return {
+      status: 403,
+      data: { error: "该账号目前处于封禁限制状态，无法登录或注册" }
+    };
+  }
+
   // A. 如果是已登录用户在个人中心发起【绑定 GitHub】
-  const validUserId = verifiedUserId || (currentSessionId ? await verifySignedSession(currentSessionId, sessionSecret) : null);
+  const validUserId = verifiedUserId || (currentSessionId ? (await verifySignedSession(currentSessionId, sessionSecret))?.userId : null);
   if (action === 'bind' && validUserId) {
     const currentUser = await db.prepare('SELECT id FROM users WHERE id = ?').bind(validUserId).first();
     if (!currentUser) {
@@ -99,9 +111,18 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
   ).bind('github', githubId).first();
 
   if (linkedAccount) {
-    const user = await db.prepare('SELECT id, username, role FROM users WHERE id = ?').bind(linkedAccount.user_id).first();
+    const user = await db.prepare(`
+      SELECT u.id, u.username, u.role, u.token_version,
+             (SELECT 1 FROM deleted_users d WHERE (d.email = u.email OR d.email = ?) AND d.expires_at > datetime('now')) as is_restricted
+      FROM users u WHERE u.id = ?
+    `).bind(primaryVerifiedEmail.toLowerCase(), linkedAccount.user_id).first();
+
     if (user) {
-      const sessionToken = await createSignedSession(user.id, sessionSecret);
+      if (user.is_restricted) {
+        return { status: 403, data: { error: "该账号目前处于封禁限制状态，无法登录" } };
+      }
+
+      const sessionToken = await createSignedSession(user.id, sessionSecret, (user as any).token_version || 1);
       cookies.set('user_session', sessionToken, {
         path: '/',
         httpOnly: true,
@@ -109,14 +130,22 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 * 7
       });
-      return { status: 200, data: { success: true, message: "GitHub 登录成功", user } };
+      return { status: 200, data: { success: true, message: "GitHub 登录成功", user: { id: user.id, username: user.username, role: user.role } } };
     }
   }
 
   // 规则 (3): 如果没有关联，检查用户邮箱是否为某一个账号的邮箱？若是，使用此账号登录；并将第三方账号ID绑定到此账号
-  const userByEmail = await db.prepare('SELECT id, username, role FROM users WHERE email = ?').bind(primaryVerifiedEmail).first();
+  const userByEmail = await db.prepare(`
+    SELECT u.id, u.username, u.role, u.token_version,
+           (SELECT 1 FROM deleted_users d WHERE d.email = u.email AND d.expires_at > datetime('now')) as is_restricted
+    FROM users u WHERE u.email = ?
+  `).bind(primaryVerifiedEmail).first();
 
   if (userByEmail) {
+    if (userByEmail.is_restricted) {
+      return { status: 403, data: { error: "该账号目前处于封禁限制状态，无法登录" } };
+    }
+
     const conflictCheck = await isOAuthBoundToAnotherUser(db, 'github', githubId, userByEmail.id);
     if (conflictCheck.conflict) {
       return { 
@@ -133,7 +162,7 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
         provider_email = excluded.provider_email
     `).bind(userByEmail.id, githubId, primaryVerifiedEmail).run();
 
-    const sessionToken = await createSignedSession(userByEmail.id, sessionSecret);
+    const sessionToken = await createSignedSession(userByEmail.id, sessionSecret, (userByEmail as any).token_version || 1);
     cookies.set('user_session', sessionToken, {
       path: '/',
       httpOnly: true,
@@ -144,7 +173,7 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
 
     return { 
       status: 200, 
-      data: { success: true, message: "GitHub 登录成功并已自动关联账户", user: userByEmail } 
+      data: { success: true, message: "GitHub 登录成功并已自动关联账户", user: { id: userByEmail.id, username: userByEmail.username, role: userByEmail.role } } 
     };
   }
 
@@ -153,8 +182,8 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
 
   await db.batch([
     db.prepare(`
-      INSERT INTO users (id, username, email, role, created_at)
-      VALUES (?, ?, ?, 'user', CURRENT_TIMESTAMP)
+      INSERT INTO users (id, username, email, role, token_version, created_at)
+      VALUES (?, ?, ?, 'user', 1, CURRENT_TIMESTAMP)
     `).bind(newUserId, githubUsername, primaryVerifiedEmail),
     db.prepare(`
       INSERT INTO user_oauth_accounts (user_id, provider, provider_user_id, provider_email)
@@ -164,7 +193,7 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
 
   const newUser = { id: newUserId, username: githubUsername, role: 'user' };
 
-  const sessionToken = await createSignedSession(newUser.id, sessionSecret);
+  const sessionToken = await createSignedSession(newUser.id, sessionSecret, 1);
   cookies.set('user_session', sessionToken, {
     path: '/',
     httpOnly: true,

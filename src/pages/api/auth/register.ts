@@ -33,17 +33,20 @@ export const POST: APIRoute = async ({ request }) => {
     if (!isAllowedEmailDomain(email)) {
       return new Response(JSON.stringify({ error: "仅支持 Gmail, Outlook, Yahoo, Hotmail, iCloud, Proton 邮箱注册，请更换重试" }), { status: 400 });
     }
-    const verifyData = new FormData();
     const turnstileSecret = (env as any).TURNSTILE_SECRET_KEY;
     if (!turnstileSecret) {
       return new Response(JSON.stringify({ error: "服务器人机验证配置缺失" }), { status: 500 });
     }
-    verifyData.append('secret', turnstileSecret);
-    verifyData.append('response', turnstileResponse);
+    const verifyParams = new URLSearchParams();
+    verifyParams.append('secret', turnstileSecret);
+    verifyParams.append('response', turnstileResponse);
+    const clientIp = request.headers.get('CF-Connecting-IP') || '';
+    if (clientIp) verifyParams.append('remoteip', clientIp);
 
     const turnstileCheck = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
-      body: verifyData,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: verifyParams,
     });
     const turnstileOutcome = await turnstileCheck.json();
     if (!turnstileOutcome.success) {
@@ -83,7 +86,7 @@ export const POST: APIRoute = async ({ request }) => {
     const hashedPassword = await hashPassword(password);
     
     await db.prepare(
-      'INSERT INTO users (id, email, username, password_hash) VALUES (?, ?, ?, ?)'
+      'INSERT INTO users (id, email, username, password_hash, token_version) VALUES (?, ?, ?, ?, 1)'
     ).bind(userId, email, username, hashedPassword).run();
 
     return new Response(JSON.stringify({ success: true, message: "注册成功！" }), { status: 200 });

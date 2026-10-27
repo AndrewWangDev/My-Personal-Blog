@@ -159,13 +159,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (sessionId && !shouldSkipDB(pathname)) {
     try {
       const sessionSecret = getSessionSecret(env);
-      const verifiedUserId = await verifySignedSession(sessionId, sessionSecret);
-      if (verifiedUserId) {
+      const sessionInfo = await verifySignedSession(sessionId, sessionSecret);
+      if (sessionInfo) {
         const db = (env as any).DB;
         if (db) {
-          const user = await db.prepare('SELECT id, username, role FROM users WHERE id = ?').bind(verifiedUserId).first();
+          const user = await db.prepare(`
+            SELECT u.id, u.username, u.role, u.token_version, u.email,
+                   (SELECT 1 FROM deleted_users d WHERE d.email = u.email AND d.expires_at > datetime('now')) as is_restricted
+            FROM users u WHERE u.id = ?
+          `).bind(sessionInfo.userId).first();
+
           if (user) {
-            context.locals.user = user;
+            const isRestricted = Boolean(user.is_restricted);
+            const userTokenVersion = Number(user.token_version || 1);
+            if (isRestricted || userTokenVersion !== sessionInfo.tokenVersion) {
+              context.cookies.delete('user_session', { path: '/' });
+            } else {
+              context.locals.user = user;
+            }
           }
         }
       }

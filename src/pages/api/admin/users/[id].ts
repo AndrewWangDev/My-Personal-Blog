@@ -26,13 +26,13 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
         .run();
     }
 
-    // If admin provided a new password, overwrite it
+    // If admin provided a new password, overwrite it and revoke all existing sessions
     if (newPassword && newPassword.trim().length > 0) {
       if (newPassword.length < 6) {
         return new Response(JSON.stringify({ error: '新密码不能少于 6 位' }), { status: 400 });
       }
       const newHash = await hashPassword(newPassword);
-      await db.prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+      await db.prepare('UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?')
         .bind(newHash, userId)
         .run();
     }

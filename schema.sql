@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     role TEXT DEFAULT 'user', -- 'admin' 或 'user'
     age TEXT,
     bio TEXT,
+    token_version INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
