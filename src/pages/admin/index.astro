@@ -578,48 +578,48 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_project_name']} <span class="text-red-500">*</span></label>
-                <input type="text" name="name" value="${item ? (item.name||'') : ''}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="text" name="name" value="${escapeHtml(item ? (item.name||'') : '')}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_author']}</label>
-                <input type="text" name="author" value="${item ? (item.author||'') : ''}" placeholder="${i18n['admin.form_default_author']}" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="text" name="author" value="${escapeHtml(item ? (item.author||'') : '')}" placeholder="${i18n['admin.form_default_author']}" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_logo_url']}</label>
-                <input type="url" name="logo_url" value="${item ? (item.logo_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="url" name="logo_url" value="${escapeHtml(item ? (item.logo_url||'') : '')}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_cover_url']}</label>
-                <input type="url" name="cover_image_url" value="${item ? (item.cover_image_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="url" name="cover_image_url" value="${escapeHtml(item ? (item.cover_image_url||'') : '')}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_summary']} <span class="text-red-500">*</span></label>
-              <input type="text" name="summary" value="${item ? (item.summary||'') : ''}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+              <input type="text" name="summary" value="${escapeHtml(item ? (item.summary||'') : '')}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_details']}</label>
-              <textarea name="details" rows="5" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-none">${item ? (item.details||'') : ''}</textarea>
+              <textarea name="details" rows="5" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-none">${escapeHtml(item ? (item.details||'') : '')}</textarea>
             </div>
 
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_tags']}</label>
-              <input type="text" name="tags" value='${item ? (item.tags||'') : ''}' placeholder='${i18n['admin.form_tags_example']}' class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-mono">
+              <input type="text" name="tags" value="${escapeHtml(item ? (item.tags||'') : '')}" placeholder="${i18n['admin.form_tags_example']}" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-mono">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 border-b border-gray-100">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_github_url']}</label>
-                <input type="url" name="github_url" value="${item ? (item.github_url||'') : ''}" placeholder="https://github.com/..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="url" name="github_url" value="${escapeHtml(item ? (item.github_url||'') : '')}" placeholder="https://github.com/..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_download_url']}</label>
-                <input type="url" name="download_url" value="${item ? (item.download_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="url" name="download_url" value="${escapeHtml(item ? (item.download_url||'') : '')}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
             </div>
           `;
@@ -629,16 +629,16 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             <div class="space-y-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_image_url']} <span class="text-red-500">*</span></label>
-                <input type="url" name="image_url" value="${item ? (item.image_url||'') : ''}" required placeholder="https://..." class="${ic}">
+                <input type="url" name="image_url" value="${escapeHtml(item ? (item.image_url||'') : '')}" required placeholder="https://..." class="${ic}">
                 <p class="text-[10px] text-gray-400 mt-1">${i18n['admin.form_image_hint']}</p>
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_link_url']} <span class="text-red-500">*</span></label>
-                <input type="url" name="link_url" value="${item ? (item.link_url||'') : ''}" required placeholder="https://..." class="${ic}">
+                <input type="url" name="link_url" value="${escapeHtml(item ? (item.link_url||'') : '')}" required placeholder="https://..." class="${ic}">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_display_order']}</label>
-                <input type="number" name="display_order" value="${item ? (item.display_order||0) : 0}" class="${ic}">
+                <input type="number" name="display_order" value="${Number(item ? (item.display_order||0) : 0)}" class="${ic}">
               </div>
             </div>
           `;
@@ -647,28 +647,28 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_news_title']} <span class="text-red-500">*</span></label>
-                <input type="text" name="title" value="${item ? (item.title||'') : ''}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="text" name="title" value="${escapeHtml(item ? (item.title||'') : '')}" required class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_author']}</label>
-                <input type="text" name="author" value="${item ? (item.author||'') : ''}" placeholder="${i18n['admin.form_default_author']}" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="text" name="author" value="${escapeHtml(item ? (item.author||'') : '')}" placeholder="${i18n['admin.form_default_author']}" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_thumbnail_url']}</label>
-                <input type="url" name="thumbnail_url" value="${item ? (item.thumbnail_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="url" name="thumbnail_url" value="${escapeHtml(item ? (item.thumbnail_url||'') : '')}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_cover_large_url']}</label>
-                <input type="url" name="cover_url" value="${item ? (item.cover_url||'') : ''}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
+                <input type="url" name="cover_url" value="${escapeHtml(item ? (item.cover_url||'') : '')}" placeholder="https://..." class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm">
               </div>
             </div>
 
             <div class="pb-4 border-b border-gray-100">
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_news_content']} <span class="text-red-500">*</span></label>
-              <textarea name="content" required rows="12" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-y font-mono">${item ? (item.content||'') : ''}</textarea>
+              <textarea name="content" required rows="12" class="w-full px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-black dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-y font-mono">${escapeHtml(item ? (item.content||'') : '')}</textarea>
             </div>
           `;
         } else if (currentTab === 'blog') {
@@ -677,24 +677,24 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_title']} <span class="text-red-500">*</span></label>
-                <input type="text" name="title" value="${item ? (item.title||'') : ''}" required class="${ic}">
+                <input type="text" name="title" value="${escapeHtml(item ? (item.title||'') : '')}" required class="${ic}">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_author']}</label>
-                <input type="text" name="author" value="${item ? (item.author||'') : ''}" placeholder="${i18n['admin.form_default_author']}" class="${ic}">
+                <input type="text" name="author" value="${escapeHtml(item ? (item.author||'') : '')}" placeholder="${i18n['admin.form_default_author']}" class="${ic}">
               </div>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_thumbnail']}</label>
-              <input type="url" name="thumbnail_url" value="${item ? (item.thumbnail_url||'') : ''}" placeholder="https://raw.githubusercontent.com/..." class="${ic}">
+              <input type="url" name="thumbnail_url" value="${escapeHtml(item ? (item.thumbnail_url||'') : '')}" placeholder="https://raw.githubusercontent.com/..." class="${ic}">
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_summary']}</label>
-              <input type="text" name="summary" value="${item ? (item.summary||'') : ''}" class="${ic}">
+              <input type="text" name="summary" value="${escapeHtml(item ? (item.summary||'') : '')}" class="${ic}">
             </div>
             <div class="pb-4 border-b border-gray-100">
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_blog_content']} <span class="text-red-500">*</span></label>
-              <textarea name="content" required rows="12" class="${ic} resize-y font-mono">${item ? (item.content||'') : ''}</textarea>
+              <textarea name="content" required rows="12" class="${ic} resize-y font-mono">${escapeHtml(item ? (item.content||'') : '')}</textarea>
             </div>
           `;
         } else if (currentTab === 'notifications') {
@@ -703,10 +703,10 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
           
           const usersHtml = users.map(u => `
             <label class="flex items-center p-3 hover:bg-white rounded-xl cursor-pointer transition-all border border-transparent hover:border-blue-100 hover:shadow-sm group">
-              <input type="checkbox" name="target_user_id" value="${u.id}" ${item && item.target_user_id === u.id ? 'checked' : ''} class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+              <input type="checkbox" name="target_user_id" value="${escapeHtml(u.id)}" ${item && item.target_user_id === u.id ? 'checked' : ''} class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
               <div class="ml-3">
-                <div class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">${u.username}</div>
-                <div class="text-[10px] text-gray-400 font-mono">${u.email} (ID: ${u.id})</div>
+                <div class="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">${escapeHtml(u.username)}</div>
+                <div class="text-[10px] text-gray-400 font-mono">${escapeHtml(u.email)} (ID: ${escapeHtml(u.id)})</div>
               </div>
             </label>
           `).join('');
@@ -715,11 +715,11 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             <div class="space-y-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_notif_title']} <span class="text-red-500">*</span></label>
-                <input type="text" name="title" value="${item ? (item.title||'') : ''}" required class="${ic}">
+                <input type="text" name="title" value="${escapeHtml(item ? (item.title||'') : '')}" required class="${ic}">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_notif_summary']}</label>
-                <input type="text" name="summary" value="${item ? (item.summary||'') : ''}" placeholder="${i18n['admin.form_notif_placeholder']}" class="${ic}">
+                <input type="text" name="summary" value="${escapeHtml(item ? (item.summary||'') : '')}" placeholder="${i18n['admin.form_notif_placeholder']}" class="${ic}">
               </div>
               <div class="p-5 bg-blue-50/50 rounded-2xl border border-blue-100/50">
                 <label class="flex items-center space-x-2 mb-4 cursor-pointer">
@@ -738,7 +738,7 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
               </div>
               <div class="pb-4 border-b border-gray-100">
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_notif_content']} <span class="text-red-500">*</span></label>
-                <textarea name="content" required rows="10" class="${ic} resize-y font-mono">${item ? (item.content||'') : ''}</textarea>
+                <textarea name="content" required rows="10" class="${ic} resize-y font-mono">${escapeHtml(item ? (item.content||'') : '')}</textarea>
               </div>
             </div>
           `;
@@ -755,7 +755,7 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
           formContainer.innerHTML = `
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_message_content']} <span class="text-red-500">*</span></label>
-              <textarea name="content" required rows="6" class="${ic} resize-y">${item ? (item.content||'') : ''}</textarea>
+              <textarea name="content" required rows="6" class="${ic} resize-y">${escapeHtml(item ? (item.content||'') : '')}</textarea>
             </div>
           `;
         } else if (currentTab === 'users') {
@@ -764,11 +764,11 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_username']}</label>
-                <input type="text" value="${item ? (item.username||'') : ''}" disabled class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm">
+                <input type="text" value="${escapeHtml(item ? (item.username||'') : '')}" disabled class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.col_email']}</label>
-                <input type="email" name="email" value="${item ? (item.email||'') : ''}" class="${ic}">
+                <input type="email" name="email" value="${escapeHtml(item ? (item.email||'') : '')}" class="${ic}">
               </div>
             </div>
             <div class="pt-4 border-t border-gray-100">
@@ -782,11 +782,11 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
           formContainer.innerHTML = `
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_restricted_email']} <span class="text-red-500">*</span></label>
-              <input type="email" name="email" value="${item ? (item.email||'') : ''}" required ${item ? 'disabled class="w-full px-4 py-2.5 bg-gray-200 text-gray-500 border border-gray-200 rounded-xl cursor-not-allowed text-sm"' : `class="${ic}"`}>
+              <input type="email" name="email" value="${escapeHtml(item ? (item.email||'') : '')}" required ${item ? 'disabled class="w-full px-4 py-2.5 bg-gray-200 text-gray-500 border border-gray-200 rounded-xl cursor-not-allowed text-sm"' : `class="${ic}"`}>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_expires_at']} <span class="text-red-500">*</span></label>
-              <input type="datetime-local" name="expires_at" value="${item ? (item.expires_at||'').replace(' ','T').substring(0,16) : ''}" required class="${ic}">
+              <input type="datetime-local" name="expires_at" value="${escapeHtml(item ? (item.expires_at||'').replace(' ','T').substring(0,16) : '')}" required class="${ic}">
             </div>
           `;
         } else if (currentTab === 'complaints') {
@@ -810,16 +810,16 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_target_url']}</label>
               <div class="px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-700 rounded-xl text-sm">
-                ${targetUrl ? `<a href="${targetUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline break-all">${targetUrl}</a>` : `<span class="text-gray-500 dark:text-slate-400">${i18n['admin.form_none']}</span>`}
+                ${targetUrl ? `<a href="${escapeHtml(targetUrl)}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline break-all">${escapeHtml(targetUrl)}</a>` : `<span class="text-gray-500 dark:text-slate-400">${i18n['admin.form_none']}</span>`}
               </div>
             </div>
             <div class="mt-4">
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_complaint_reason']}</label>
-              <input type="text" value="${mappedReason}" disabled class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm">
+              <input type="text" value="${escapeHtml(mappedReason)}" disabled class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm">
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_complaint_details']}</label>
-              <textarea disabled rows="3" class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm resize-y">${item ? (item.details||'') : ''}</textarea>
+              <textarea disabled rows="3" class="w-full px-4 py-2.5 bg-gray-200 dark:bg-slate-700/50 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700 rounded-xl cursor-not-allowed text-sm resize-y">${escapeHtml(item ? (item.details||'') : '')}</textarea>
             </div>
             <hr class="my-6 border-gray-100 dark:border-slate-800">
             <div>
@@ -831,7 +831,7 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 mb-2">${i18n['admin.form_admin_reply']}</label>
-              <textarea name="result" rows="4" class="${ic} resize-y">${item ? (item.result||'') : ''}</textarea>
+              <textarea name="result" rows="4" class="${ic} resize-y">${escapeHtml(item ? (item.result||'') : '')}</textarea>
             </div>
           `;
         }

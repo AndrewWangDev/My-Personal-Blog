@@ -32,7 +32,7 @@ if (!newsItem) {
 
 const date = new Date(newsItem.created_at);
 const timeStr = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400');
+
 ---
 
 <Layout title={`${newsItem.title} | ${t['nav.news']}`} description={newsItem.content ? newsItem.content.replace(/[#*_\[\]()]/g, '').substring(0, 160) + '...' : newsItem.title} ogImage={newsItem.cover_url || newsItem.thumbnail_url || '/fallback.png'}>

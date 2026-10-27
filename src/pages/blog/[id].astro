@@ -27,7 +27,7 @@ const lang = getLangFromRequest(Astro);
 const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 
 const isLoggedIn = Astro.cookies.has('user_session');
-Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400');
+
 ---
 
 <Layout title={post.title + " - Andrew Wang Dev"} description={post.summary || post.title} ogImage={post.thumbnail_url || '/fallback.png'}>
