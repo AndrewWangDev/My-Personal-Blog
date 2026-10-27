@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env as cfEnv } from "cloudflare:workers";
+import { isAllowedEmailDomain } from "../../../utils/validation";
 
 const templates: Record<string, any> = {
   zh: {
@@ -55,6 +56,7 @@ export const POST: APIRoute = async (context) => {
     const body = await request.json();
     const { email, turnstileResponse } = body;
     if (!email) return new Response(JSON.stringify({ error: "邮箱不能为空" }), { status: 400 });
+    if (!isAllowedEmailDomain(email)) return new Response(JSON.stringify({ error: "仅支持 Gmail, Outlook, Yahoo, Hotmail, iCloud, Proton 邮箱，请更换重试" }), { status: 400 });
     if (!turnstileResponse) return new Response(JSON.stringify({ error: "请先完成人机验证" }), { status: 400 });
 
     const db = (cfEnv as any).DB;

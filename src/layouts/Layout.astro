@@ -257,7 +257,7 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
 			</div>
 		</footer>
 
-		<div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center pointer-events-none space-y-2"></div>
+		<div id="toast-container" role="status" aria-live="polite" class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center pointer-events-none space-y-2"></div>
 
 		<!-- Search Modal -->
 		<div id="search-modal" class="fixed inset-0 z-[60] flex items-start justify-center pt-24 px-4 hidden opacity-0 transition-all duration-300">

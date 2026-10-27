@@ -2,12 +2,22 @@
 
 const textEncoder = new TextEncoder();
 
-export const DEFAULT_SESSION_SECRET = 'andrewwang-default-fallback-session-key-32b!';
+export function getSessionSecret(env: any): string {
+  const secret = env?.SESSION_SECRET || (import.meta.env as any)?.SESSION_SECRET;
+  if (!secret) {
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ [DEV ONLY] SESSION_SECRET is not set in environment. Using temporary local dev key.');
+      return 'dev-local-session-secret-key-32b-only-for-local-dev!';
+    }
+    throw new Error('CRITICAL SECURITY ERROR: SESSION_SECRET is not configured in production environment bindings!');
+  }
+  return secret;
+}
 
 async function getHmacKey(secret: string): Promise<CryptoKey> {
   return await crypto.subtle.importKey(
     'raw',
-    textEncoder.encode(secret || DEFAULT_SESSION_SECRET),
+    textEncoder.encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign', 'verify']

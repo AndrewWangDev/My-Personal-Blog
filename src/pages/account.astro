@@ -357,12 +357,23 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
             <li>{t['account.delete_notice_li2']}</li>
             <li class="font-bold text-red-600 dark:text-red-400">{t['account.delete_notice_li3']}</li>
           </ul>
-          <label class="flex items-start space-x-3 cursor-pointer group">
+          <label class="flex items-start space-x-3 cursor-pointer group mb-4">
             <div class="flex-shrink-0 mt-0.5">
               <input type="checkbox" id="confirm-delete-checkbox" aria-label="Confirm Delete Checkbox" class="w-4 h-4 rounded border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-red-600 focus:ring-red-600 focus:ring-2">
             </div>
             <span class="text-sm text-gray-700 dark:text-slate-300 font-medium group-hover:text-gray-900 dark:group-hover:text-slate-100">{t['account.delete_confirm_label']}</span>
           </label>
+          <div class="mt-3">
+            <label class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">
+              {hasPassword ? '请输入当前密码以验证注销：' : '第三方账号请输入 DELETE 以验证注销：'}
+            </label>
+            <input 
+              type={hasPassword ? 'password' : 'text'} 
+              id="confirm-delete-auth" 
+              placeholder={hasPassword ? '当前账号密码' : 'DELETE'} 
+              class="w-full px-3.5 py-2 text-sm bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-900 dark:text-slate-100 transition-all" 
+            />
+          </div>
         </div>
         <div class="bg-gray-50 dark:bg-slate-800/50 px-6 py-4 flex flex-col-reverse sm:flex-row justify-end sm:space-x-3 gap-y-3 sm:gap-y-0">
           <button type="button" class="modal-close w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">{t['account.cancel']}</button>
@@ -444,6 +455,15 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
 
   <script define:vars={{ i18n, googleClientId, hasPassword }}>
     document.addEventListener('DOMContentLoaded', () => {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
       // ===== Custom Dialog Modal System (Alert, Confirm, Prompt) =====
       const dialogModal = document.getElementById('custom-dialog-modal');
       const dialogOverlay = document.getElementById('custom-dialog-overlay');
@@ -641,13 +661,13 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
                 <a href="/blog/${post.id}" class="group block bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 hover:shadow-md transition-all overflow-hidden">
                   <div class="flex flex-col sm:flex-row">
                     <div class="flex-1 p-5">
-                      <h3 class="text-lg font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">${post.title}</h3>
+                      <h3 class="text-lg font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-1">${escapeHtml(post.title)}</h3>
                       <div class="flex items-center space-x-2 text-xs text-gray-400 dark:text-slate-500 mb-2">
-                        <span>${post.author || 'Andrew Wang'}</span>
+                        <span>${escapeHtml(post.author || 'Andrew Wang')}</span>
                         <span>·</span>
                         <span>${dateStr}</span>
                       </div>
-                      ${post.summary ? `<p class="text-gray-600 dark:text-slate-400 text-sm line-clamp-2">${post.summary}</p>` : ''}
+                      ${post.summary ? `<p class="text-gray-600 dark:text-slate-400 text-sm line-clamp-2">${escapeHtml(post.summary)}</p>` : ''}
                     ${post.thumbnail_url ? `<div class="sm:w-40 flex-shrink-0 aspect-video sm:aspect-[4/3]"><img src="${post.thumbnail_url}" alt="Blog Cover" class="w-full h-full object-cover sm:rounded-r-2xl" decoding="async" /></div>` : ''}
                   </div>
                 </a>
@@ -676,11 +696,11 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
                       ${res.logo_url ? `<img src="${res.logo_url}" alt="Resource Logo" class="w-full h-full object-cover" />` : `<span class="text-xl font-bold text-gray-300 dark:text-slate-600">${res.name.substring(0, 2).toUpperCase()}</span>`}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <h3 class="text-base font-bold text-gray-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${res.name}</h3>
-                      <p class="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-wider">${res.author || 'Andrew Wang'}</p>
+                      <h3 class="text-base font-bold text-gray-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${escapeHtml(res.name)}</h3>
+                      <p class="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-wider">${escapeHtml(res.author || 'Andrew Wang')}</p>
                     </div>
                   </div>
-                  <p class="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mb-4 relative z-10 pointer-events-none">${res.summary || ''}</p>
+                  <p class="text-xs text-gray-500 dark:text-slate-400 line-clamp-2 mb-4 relative z-10 pointer-events-none">${escapeHtml(res.summary || '')}</p>
                   <div class="mt-auto pt-4 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between relative z-10 pointer-events-none">
                     <span class="text-[10px] text-gray-400 dark:text-slate-500 font-bold">${new Date(res.created_at).toLocaleDateString('zh-CN')}</span>
                     <div class="flex items-center space-x-1 text-red-400">
@@ -1194,14 +1214,26 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
           if(m) closeModal(m);
         });
       });
-      checkbox.addEventListener('change', (e) => {
-        btnConfirmDelete.disabled = !e.target.checked;
-      });
+      const deleteAuthInput = document.getElementById('confirm-delete-auth');
+      function checkDeleteReady() {
+        const hasAuthVal = (deleteAuthInput?.value || '').trim().length > 0;
+        btnConfirmDelete.disabled = !(checkbox.checked && hasAuthVal);
+      }
+      checkbox.addEventListener('change', checkDeleteReady);
+      deleteAuthInput?.addEventListener('input', checkDeleteReady);
+
       btnConfirmDelete.addEventListener('click', async () => {
+        const authVal = (deleteAuthInput?.value || '').trim();
+        if (!authVal) return;
         btnConfirmDelete.disabled = true;
         btnConfirmDelete.textContent = i18n.deleting;
         try {
-          const res = await fetch('/api/account/delete', { method: 'DELETE' });
+          const payload = hasPassword ? { password: authVal } : { confirmation: authVal };
+          const res = await fetch('/api/account/delete', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
           const data = await res.json();
           if (data.success) {
             if(window.showToast) window.showToast(i18n.delete_success, 'success');

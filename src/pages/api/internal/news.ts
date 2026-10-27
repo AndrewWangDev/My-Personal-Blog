@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
+import { timingSafeEqualStr } from "../../../utils/password";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -18,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    if (!providedSecret || providedSecret !== expectedSecret) {
+    if (!providedSecret || !timingSafeEqualStr(providedSecret, expectedSecret)) {
       return new Response(JSON.stringify({ error: "Unauthorized: Invalid secret key" }), { 
         status: 401,
         headers: { 'Content-Type': 'application/json' }

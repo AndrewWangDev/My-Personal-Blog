@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 import { isOAuthBoundToAnotherUser } from '../../../utils/credentials';
-import { createSignedSession, verifySignedSession, DEFAULT_SESSION_SECRET } from '../../../utils/session';
+import { createSignedSession, verifySignedSession, getSessionSecret } from '../../../utils/session';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
@@ -80,7 +80,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
       return new Response(JSON.stringify({ error: "数据库连接不可用" }), { status: 500 });
     }
 
-    const sessionSecret = (env as any).SESSION_SECRET || DEFAULT_SESSION_SECRET;
+    const sessionSecret = getSessionSecret(env);
     const currentSessionId = cookies.get('user_session')?.value;
     let currentUserId = locals.user?.id;
     if (!currentUserId && currentSessionId) {

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 import { parseClientDataJSON, verifySignature, parseAuthenticatorData } from '../../../../utils/webauthn';
-import { createSignedSession, DEFAULT_SESSION_SECRET } from '../../../../utils/session';
+import { createSignedSession, getSessionSecret } from '../../../../utils/session';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -96,7 +96,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "关联用户不存在" }), { status: 404 });
     }
 
-    const sessionSecret = (env as any).SESSION_SECRET || DEFAULT_SESSION_SECRET;
+    const sessionSecret = getSessionSecret(env);
     const sessionToken = await createSignedSession(user.id as string, sessionSecret);
     cookies.set('user_session', sessionToken, {
       path: '/',

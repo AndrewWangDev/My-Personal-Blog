@@ -78,7 +78,7 @@ try {
     ) : (
       <div class="grid gap-6">
         {posts.map((post) => (
-          <a href={`/blog/${post.id}`} aria-label={post.title} class="group block bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-md transition-all overflow-hidden">
+          <a href={`/blog/${post.id}`} class="group block bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 hover:shadow-md transition-all overflow-hidden">
             <div class="flex flex-col-reverse sm:flex-row sm:items-center justify-between">
               <div class="flex-1 p-6 min-w-0">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mb-2 line-clamp-2">{post.title}</h2>

@@ -38,9 +38,10 @@ if (resource.details) {
 
 // 读取登录状态
 const isLoggedIn = Astro.cookies.has('user_session');
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
-<Layout title={`${resource.name} | Andrew Wang Dev`}>
+<Layout title={`${resource.name} | Andrew Wang Dev`} description={resource.summary || resource.name} ogImage={resource.cover_image_url || resource.logo_url || '/fallback.png'}>
 	<article class="max-w-4xl mx-auto py-8 px-4 sm:px-0">
 		<!-- Header Section -->
 		<div class="flex flex-col md:flex-row gap-8 mb-12">

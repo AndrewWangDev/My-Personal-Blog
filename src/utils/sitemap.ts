@@ -30,8 +30,6 @@ export async function generateSitemapXml(): Promise<string> {
     { loc: `${BASE_URL}/news`, priority: '0.9', changefreq: 'daily', lastmod: today },
     { loc: `${BASE_URL}/about`, priority: '0.8', changefreq: 'weekly', lastmod: today },
     { loc: `${BASE_URL}/guestbook`, priority: '0.8', changefreq: 'daily', lastmod: today },
-    { loc: `${BASE_URL}/privacy`, priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-23' },
-    { loc: `${BASE_URL}/terms`, priority: '0.5', changefreq: 'monthly', lastmod: '2026-10-23' },
   ];
 
   try {

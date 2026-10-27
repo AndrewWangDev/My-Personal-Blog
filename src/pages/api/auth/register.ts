@@ -5,7 +5,7 @@ import { env } from "cloudflare:workers";
 
 import { hashPassword } from '../../../utils/password';
 
-const ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com', 'icloud.com', 'proton.me'];
+import { isAllowedEmailDomain, validateUsername } from '../../../utils/validation';
 
 // 【关键：去掉了括号里的 locals 参数，再也不去碰它】
 export const POST: APIRoute = async ({ request }) => {
@@ -21,15 +21,18 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: "请填写完整注册信息（包含 6 位验证码）" }), { status: 400 });
     }
 
+    const uCheck = validateUsername(username);
+    if (!uCheck.valid) {
+      return new Response(JSON.stringify({ error: uCheck.error }), { status: 400 });
+    }
+
     if (!turnstileResponse) {
       return new Response(JSON.stringify({ error: "人机验证未完成，请重新点击人机验证框" }), { status: 400 });
     }
 
-    const emailDomain = email.split('@')[1]?.toLowerCase();
-    if (!ALLOWED_EMAIL_DOMAINS.includes(emailDomain)) {
+    if (!isAllowedEmailDomain(email)) {
       return new Response(JSON.stringify({ error: "仅支持 Gmail, Outlook, Yahoo, Hotmail, iCloud, Proton 邮箱注册，请更换重试" }), { status: 400 });
     }
-
     const verifyData = new FormData();
     const turnstileSecret = (env as any).TURNSTILE_SECRET_KEY;
     if (!turnstileSecret) {
