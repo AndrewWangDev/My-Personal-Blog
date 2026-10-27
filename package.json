@@ -22,7 +22,10 @@
     "tailwindcss": "^3.4.19"
   },
   "overrides": {
-    "vite": "^7"
+    "vite": "^7",
+    "@astrojs/tailwind": {
+      "astro": "$astro"
+    }
   },
   "devDependencies": {
     "@types/marked": "^5.0.2",
