@@ -27,9 +27,10 @@ const lang = getLangFromRequest(Astro);
 const t = ui[lang as keyof typeof ui] || ui[defaultLang];
 
 const isLoggedIn = Astro.cookies.has('user_session');
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400');
 ---
 
-<Layout title={post.title + " - Andrew Wang Dev"}>
+<Layout title={post.title + " - Andrew Wang Dev"} description={post.summary || post.title} ogImage={post.thumbnail_url || '/fallback.png'}>
 	<article class="bg-white dark:bg-slate-900 p-8 md:p-12 rounded-[2rem] shadow-sm border border-gray-100 dark:border-slate-800 max-w-4xl mx-auto">
 		<h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-slate-100 tracking-tight mb-4">{post.title}</h1>
 		<div class="mb-8 text-gray-500 dark:text-slate-400 border-b border-gray-100 dark:border-slate-800 pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

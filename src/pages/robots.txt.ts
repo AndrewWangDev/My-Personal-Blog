@@ -55,7 +55,6 @@ Disallow: /api
 Disallow: /publickey.asc
 
 Sitemap: https://andrewwangdev.com/sitemap.xml
-Sitemap: https://andrewwangdev.com/sitemap-index.xml
 `.trim();
 
   return new Response(content, {

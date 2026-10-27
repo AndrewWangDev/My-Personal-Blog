@@ -31,6 +31,20 @@ export async function hashPassword(password: string): Promise<string> {
   return `pbkdf2:${iterations}:${saltHex}:${hashHex}`;
 }
 
+export function timingSafeEqualStr(a: string, b: string): boolean {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const aLen = a.length;
+  const bLen = b.length;
+  let diff = aLen ^ bLen;
+  const len = Math.max(aLen, bLen);
+  for (let i = 0; i < len; i++) {
+    const charA = i < aLen ? a.charCodeAt(i) : 0;
+    const charB = i < bLen ? b.charCodeAt(i) : 0;
+    diff |= charA ^ charB;
+  }
+  return diff === 0;
+}
+
 export async function verifyPassword(password: string, storedHash: string): Promise<{ isValid: boolean; needsRehash: boolean }> {
   if (!storedHash) return { isValid: false, needsRehash: false };
 
@@ -67,14 +81,14 @@ export async function verifyPassword(password: string, storedHash: string): Prom
     );
 
     const computedHashHex = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
-    return { isValid: computedHashHex === expectedHashHex, needsRehash: false };
+    return { isValid: timingSafeEqualStr(computedHashHex, expectedHashHex), needsRehash: false };
   }
 
   // 2. Legacy unsalted single-round SHA-256 fallback
   const msgUint8 = new TextEncoder().encode(password);
   const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
   const legacyHash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-  const isMatch = legacyHash.toLowerCase() === storedHash.toLowerCase();
+  const isMatch = timingSafeEqualStr(legacyHash.toLowerCase(), storedHash.toLowerCase());
 
   return { isValid: isMatch, needsRehash: isMatch };
 }

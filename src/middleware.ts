@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { env } from "cloudflare:workers";
-import { verifySignedSession, DEFAULT_SESSION_SECRET } from "./utils/session";
+import { verifySignedSession, getSessionSecret } from "./utils/session";
 
 // ========== Rate Limit Maps ==========
 const globalLimits = new Map<string, { count: number; resetAt: number }>();
@@ -158,7 +158,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // ===== Populate user (with HMAC verification & whitelist optimization — Layer 4) =====
   if (sessionId && !shouldSkipDB(pathname)) {
     try {
-      const sessionSecret = (env as any).SESSION_SECRET || DEFAULT_SESSION_SECRET;
+      const sessionSecret = getSessionSecret(env);
       const verifiedUserId = await verifySignedSession(sessionId, sessionSecret);
       if (verifiedUserId) {
         const db = (env as any).DB;

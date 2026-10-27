@@ -164,6 +164,15 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
 
   <script is:inline>
     document.addEventListener('DOMContentLoaded', () => {
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
       const i18n = window.__ADMIN_I18N__ || {};
       let currentTab = localStorage.getItem('admin_tab') || 'resources'; // Default or saved
       let currentData = [];
@@ -326,10 +335,10 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
           if (currentTab === 'guestbook') {
             const timeStr = new Date(item.created_at).toLocaleString('zh-CN');
             const statusBadge = item.is_deleted ? `<span class="text-xs text-red-400">${i18n['admin.badge_deleted']}</span>` : '';
-            const preview = (item.content || '').substring(0, 60) + (item.content && item.content.length > 60 ? '...' : '');
+            const preview = escapeHtml((item.content || '').substring(0, 60)) + (item.content && item.content.length > 60 ? '...' : '');
             html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
               <td class="px-6 py-4 text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
-              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm whitespace-nowrap">${item.username || i18n['admin.deactivated_user']}</td>
+              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm whitespace-nowrap">${escapeHtml(item.username) || i18n['admin.deactivated_user']}</td>
               <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm max-w-[250px] truncate">${statusBadge}${preview}</td>
               <td class="px-6 py-4 text-gray-500 dark:text-slate-400 text-xs whitespace-nowrap">${timeStr}</td>
               <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
@@ -338,10 +347,10 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
               </td></tr>`;
           } else if (currentTab === 'notifications') {
             const timeStr = new Date(item.created_at).toLocaleString('zh-CN');
-            const targetStr = item.target_user_id ? `<span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">UID: ${'....' + String(item.target_user_id).slice(-6)} (${item.target_username || i18n['admin.unknown']})</span>` : `<span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">${i18n['admin.broadcast']}</span>`;
+            const targetStr = item.target_user_id ? `<span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-bold">UID: ${'....' + String(item.target_user_id).slice(-6)} (${escapeHtml(item.target_username) || i18n['admin.unknown']})</span>` : `<span class="px-2 py-0.5 bg-green-50 text-green-600 rounded text-[10px] font-bold">${i18n['admin.broadcast']}</span>`;
             html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
               <td class="px-6 py-4 text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
-              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm max-w-[200px] truncate" title="${item.title}">${item.title}</td>
+              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm max-w-[200px] truncate" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</td>
               <td class="px-6 py-4 whitespace-nowrap">${targetStr}</td>
               <td class="px-6 py-4 text-gray-500 dark:text-slate-400 text-xs whitespace-nowrap">${timeStr}</td>
               <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
@@ -352,8 +361,8 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             const timeStr = new Date(item.created_at).toLocaleDateString('zh-CN');
             const roleBadge = item.role === 'admin' ? `<span class="whitespace-nowrap px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">${i18n['admin.role_admin']}</span>` : `<span class="whitespace-nowrap px-2 py-0.5 bg-gray-100 text-gray-600 dark:text-slate-300 rounded-full text-xs">${i18n['admin.role_user']}</span>`;
             html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-              <td class="px-6 py-4 font-bold text-black dark:text-white whitespace-nowrap">${item.username}</td>
-              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm whitespace-nowrap">${item.email}</td>
+              <td class="px-6 py-4 font-bold text-black dark:text-white whitespace-nowrap">${escapeHtml(item.username)}</td>
+              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm whitespace-nowrap">${escapeHtml(item.email)}</td>
               <td class="px-6 py-4 whitespace-nowrap">${roleBadge}</td>
               <td class="px-6 py-4 text-gray-500 dark:text-slate-400 text-xs whitespace-nowrap">${timeStr}</td>
               <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
@@ -366,20 +375,20 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             const isActive = exp > now;
             const statusBadge = isActive ? `<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-xs font-bold">${i18n['admin.status_active']}</span>` : `<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">${i18n['admin.status_expired']}</span>`;
             html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm">${item.email}</td>
+              <td class="px-6 py-4 font-medium text-black dark:text-white text-sm">${escapeHtml(item.email)}</td>
               <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm">${exp.toLocaleString('zh-CN')}</td>
               <td class="px-6 py-4">${statusBadge}</td>
               <td class="px-6 py-4 text-sm font-medium">
                 <div class="flex flex-wrap justify-end gap-3">
-                  <button class="btn-edit-r text-blue-600 hover:text-blue-900" data-email="${item.email}" data-expires="${item.expires_at}">${i18n['admin.btn_modify_time']}</button>
-                  <button class="btn-delete-r text-red-500 hover:text-red-700" data-email="${item.email}">${i18n['admin.btn_remove_restriction']}</button>
+                  <button class="btn-edit-r text-blue-600 hover:text-blue-900" data-email="${escapeHtml(item.email)}" data-expires="${escapeHtml(item.expires_at)}">${i18n['admin.btn_modify_time']}</button>
+                  <button class="btn-delete-r text-red-500 hover:text-red-700" data-email="${escapeHtml(item.email)}">${i18n['admin.btn_remove_restriction']}</button>
                 </div>
               </td></tr>`;
           } else if (currentTab === 'showcase') {
             html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
               <td class="px-6 py-4 text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
-              <td class="px-6 py-4"><img src="${item.image_url}" alt="Admin Resource Thumbnail" class="w-20 h-10 object-cover rounded shadow-sm border border-gray-100"></td>
-              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm truncate max-w-[150px]">${item.link_url}</td>
+              <td class="px-6 py-4"><img src="${escapeHtml(item.image_url)}" alt="Admin Resource Thumbnail" class="w-20 h-10 object-cover rounded shadow-sm border border-gray-100"></td>
+              <td class="px-6 py-4 text-gray-600 dark:text-slate-300 text-sm truncate max-w-[150px]">${escapeHtml(item.link_url)}</td>
               <td class="px-6 py-4 text-black dark:text-white font-bold text-sm">${item.display_order}</td>
               <td class="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                 <button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_edit']}</button>
@@ -413,7 +422,7 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             const timeStr = new Date(item.created_at).toLocaleDateString('zh-CN');
             const statusBadge = item.status === 'resolved' ? `<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">${i18n['admin.status_resolved']}</span>` : `<span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-xs font-bold">${i18n['admin.form_status_pending']}</span>`;
             const userDeletedBadge = item.is_deleted ? `<span class="text-xs text-red-500 font-bold ml-2">${i18n['admin.user_withdrawn']}</span>` : '';
-            const details = (item.details || '').replace(/</g, '&lt;').substring(0, 50) + '...';
+            const details = escapeHtml((item.details || '').substring(0, 50)) + '...';
             html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
               <td class="px-6 py-4">
                 <div class="font-bold text-black dark:text-white text-sm mb-1">${mappedReason}${userDeletedBadge}</div>
@@ -421,8 +430,8 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
                 <div class="text-[10px] text-blue-500 mt-1">${item.target_type} #${item.target_id}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-black dark:text-white">${item.username || i18n['admin.unknown_user']}</div>
-                <div class="text-[10px] text-gray-500">${item.email || ''}</div>
+                <div class="text-sm font-medium text-black dark:text-white">${escapeHtml(item.username) || i18n['admin.unknown_user']}</div>
+                <div class="text-[10px] text-gray-500">${escapeHtml(item.email || '')}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 ${statusBadge}
@@ -438,8 +447,8 @@ const adminI18n = JSON.stringify(Object.fromEntries(Object.entries(t).filter(([k
             const summary = item.summary || (item.content ? item.content.substring(0, 50) + '...' : '');
             html += `<tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-slate-400 font-mono text-xs">#${item.id}</td>
-              <td class="px-6 py-4 whitespace-nowrap"><div class="font-bold text-black dark:text-white truncate max-w-[200px]">${title}</div><div class="text-xs text-gray-400 dark:text-slate-500 max-w-[200px] truncate">${summary}</div></td>
-              <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-slate-300">${item.author || 'Andrew Wang'}</td>
+              <td class="px-6 py-4 whitespace-nowrap"><div class="font-bold text-black dark:text-white truncate max-w-[200px]">${escapeHtml(title)}</div><div class="text-xs text-gray-400 dark:text-slate-500 max-w-[200px] truncate">${escapeHtml(summary)}</div></td>
+              <td class="px-6 py-4 whitespace-nowrap text-gray-600 dark:text-slate-300">${escapeHtml(item.author || 'Andrew Wang')}</td>
               <td class="px-6 py-4 whitespace-nowrap text-gray-500 dark:text-slate-400 text-xs">${timeStr}</td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <button class="btn-edit text-blue-600 hover:text-blue-900 mr-3" data-id="${item.id}">${i18n['admin.btn_edit']}</button>

@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 import { isOAuthBoundToAnotherUser } from '../../../utils/credentials';
-import { createSignedSession, verifySignedSession, DEFAULT_SESSION_SECRET } from '../../../utils/session';
+import { createSignedSession, verifySignedSession, getSessionSecret } from '../../../utils/session';
 
 // Helper to process GitHub user profile and execute 4-step state machine
 async function processGitHubAuth(githubToken: string, currentSessionId: string | undefined, action: string | undefined, db: any, cookies: any, sessionSecret: string, verifiedUserId?: string | null) {
@@ -239,7 +239,7 @@ export const GET: APIRoute = async ({ request, cookies, redirect, locals }) => {
     }
 
     const db = (env as any).DB;
-    const sessionSecret = (env as any).SESSION_SECRET || DEFAULT_SESSION_SECRET;
+    const sessionSecret = getSessionSecret(env);
     const currentSessionId = cookies.get('user_session')?.value;
     const cookieAction = cookies.get('github_oauth_action')?.value || action;
 
@@ -294,7 +294,7 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     }
 
     const db = (env as any).DB;
-    const sessionSecret = (env as any).SESSION_SECRET || DEFAULT_SESSION_SECRET;
+    const sessionSecret = getSessionSecret(env);
     const currentSessionId = cookies.get('user_session')?.value;
 
     const result = await processGitHubAuth(tokenData.access_token, currentSessionId, action, db, cookies, sessionSecret, locals.user?.id);

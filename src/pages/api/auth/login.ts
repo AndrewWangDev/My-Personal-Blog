@@ -3,7 +3,7 @@ import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 
 import { verifyPassword, hashPassword } from '../../../utils/password';
-import { createSignedSession, DEFAULT_SESSION_SECRET } from '../../../utils/session';
+import { createSignedSession, getSessionSecret } from '../../../utils/session';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // 3. 登录成功，生成防篡改签名 Session 并种下 Cookie
-    const sessionSecret = (env as any).SESSION_SECRET || DEFAULT_SESSION_SECRET;
+    const sessionSecret = getSessionSecret(env);
     const sessionToken = await createSignedSession(user.id as string, sessionSecret);
     cookies.set('user_session', sessionToken, {
       path: '/',

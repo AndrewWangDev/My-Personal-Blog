@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS comments (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
 
 -- 3. 互动表（统一管理点赞和收藏，节省空间）
 CREATE TABLE IF NOT EXISTS interactions (
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS interactions (
     FOREIGN KEY (user_id) REFERENCES users(id),
     UNIQUE(user_id, target_type, target_id) -- 防止重复点赞/收藏
 );
+CREATE INDEX IF NOT EXISTS idx_interactions_target ON interactions(target_type, target_id);
 
 -- 4. 资源展示表
 CREATE TABLE IF NOT EXISTS resources (
