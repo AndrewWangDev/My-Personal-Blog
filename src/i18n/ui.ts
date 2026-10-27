@@ -6,7 +6,7 @@ export const languages = {
   de: 'Deutsch'
 };
 
-export const defaultLang = 'zh';
+export const defaultLang = 'en';
 
 export const ui = {
   zh: {

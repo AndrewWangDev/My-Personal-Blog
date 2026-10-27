@@ -127,7 +127,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // ===== Language Preference Detection =====
   if (!context.cookies.has('lang')) {
     const acceptLanguage = context.request.headers.get('accept-language');
-    let preferredLang = 'zh';
+    let preferredLang = 'en';
     if (acceptLanguage) {
       const langs = acceptLanguage.split(',').map(l => l.split(';')[0].trim().toLowerCase());
       for (const l of langs) {
