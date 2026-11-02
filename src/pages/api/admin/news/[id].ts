@@ -50,17 +50,13 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 
   try {
     const db = env.DB;
-    const { success } = await db.prepare('DELETE FROM news WHERE id = ?').bind(id).run();
-
-    if (success) {
-      // Also delete related interactions and comments
-      await db.prepare("DELETE FROM interactions WHERE target_type IN ('news_like', 'news_bookmark') AND target_id = ?").bind(`news_${id}`).run();
-      await db.prepare("DELETE FROM comments WHERE post_id = ?").bind(`news_${id}`).run();
-      
-      return new Response(JSON.stringify({ success: true, message: "删除成功" }), { status: 200 });
-    } else {
-      return new Response(JSON.stringify({ error: "删除失败" }), { status: 500 });
-    }
+    // 使用 batch 原子级联清理所有关联 interactions 和 comments
+    await db.batch([
+      db.prepare("DELETE FROM interactions WHERE target_type IN ('news_like', 'news_bookmark') AND target_id = ?").bind(`news_${id}`),
+      db.prepare("DELETE FROM comments WHERE post_id = ?").bind(`news_${id}`),
+      db.prepare("DELETE FROM news WHERE id = ?").bind(id)
+    ]);
+    return new Response(JSON.stringify({ success: true, message: "删除成功" }), { status: 200 });
   } catch (error) {
     console.error("Error deleting news:", error);
     return new Response(JSON.stringify({ error: "系统繁忙，请稍后再试" }), { status: 500 });

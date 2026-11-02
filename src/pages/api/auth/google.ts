@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 import { isOAuthBoundToAnotherUser } from '../../../utils/credentials';
-import { createSignedSession, verifySignedSession, getSessionSecret } from '../../../utils/session';
+import { createSignedSession, getSessionSecret } from '../../../utils/session';
 
 export const POST: APIRoute = async ({ request, cookies, locals }) => {
   try {
@@ -92,15 +92,13 @@ export const POST: APIRoute = async ({ request, cookies, locals }) => {
     }
 
     const sessionSecret = getSessionSecret(env);
-    const currentSessionId = cookies.get('user_session')?.value;
-    let currentUserId = locals.user?.id;
-    if (!currentUserId && currentSessionId) {
-      const verified = await verifySignedSession(currentSessionId, sessionSecret);
-      currentUserId = verified?.userId;
-    }
 
     // A. 如果是已登录用户在个人中心发起【绑定 Google】操作
-    if (action === 'bind' && currentUserId) {
+    if (action === 'bind') {
+      const currentUserId = locals.user?.id;
+      if (!currentUserId) {
+        return new Response(JSON.stringify({ error: "登录已失效或受限，请重新登录" }), { status: 401 });
+      }
       // 检查当前会话用户是否存在
       const currentUser = await db.prepare('SELECT id FROM users WHERE id = ?').bind(currentUserId).first();
       if (!currentUser) {

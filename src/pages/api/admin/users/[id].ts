@@ -19,9 +19,9 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
     const data = await request.json();
     const { email, newPassword } = data;
 
-    // Update basic info only if a valid email is provided
+    // Update basic info and revoke sessions if email is changed
     if (email && typeof email === 'string' && email.trim().length > 0) {
-      await db.prepare('UPDATE users SET email = ? WHERE id = ?')
+      await db.prepare('UPDATE users SET email = ?, token_version = token_version + 1 WHERE id = ?')
         .bind(email.trim(), userId)
         .run();
     }

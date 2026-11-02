@@ -12,7 +12,7 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
     <div class="max-w-md w-full text-center">
       <!-- 404 Illustration / Icon -->
       <div class="relative mb-8">
-        <div class="text-[10rem] font-black text-gray-50 leading-none select-none">404</div>
+        <div class="text-[10rem] font-black text-gray-100 dark:text-slate-800/40 leading-none select-none">404</div>
         <div class="absolute inset-0 flex items-center justify-center">
           <div class="bg-gradient-to-br from-blue-500 to-indigo-600 w-24 h-24 rounded-3xl rotate-12 shadow-xl shadow-blue-500/20 flex items-center justify-center">
             <svg class="w-12 h-12 text-white -rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,16 +22,16 @@ const t = ui[lang as keyof typeof ui] || ui[defaultLang];
         </div>
       </div>
 
-      <h1 class="text-3xl font-bold text-gray-900 mb-4">{t['404.title']}</h1>
-      <p class="text-gray-500 mb-10 leading-relaxed">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t['404.title']}</h1>
+      <p class="text-gray-500 dark:text-slate-400 mb-10 leading-relaxed">
         {t['404.desc']}
       </p>
 
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="/" class="w-full sm:w-auto bg-gray-900 hover:bg-black text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95">
+        <a href="/" class="w-full sm:w-auto bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-slate-100 text-white dark:text-gray-900 px-8 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95">
           {t['404.back']}
         </a>
-        <button type="button" id="contact-404-btn" class="w-full sm:w-auto bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-8 py-3 rounded-2xl font-bold transition-all shadow-sm active:scale-95 cursor-pointer">
+        <button type="button" id="contact-404-btn" class="w-full sm:w-auto bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-200 border border-gray-200 dark:border-slate-700 px-8 py-3 rounded-2xl font-bold transition-all shadow-sm active:scale-95 cursor-pointer">
           {t['footer.contact']}
         </button>
       </div>

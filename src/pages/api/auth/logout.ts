@@ -6,6 +6,8 @@ export const ALL: APIRoute = async ({ cookies, redirect, request }) => {
   cookies.delete('passkey_auth_ch', { path: '/' });
   cookies.delete('oauth_state_google', { path: '/' });
   cookies.delete('oauth_state_github', { path: '/' });
+  cookies.delete('github_oauth_state', { path: '/' });
+  cookies.delete('github_oauth_action', { path: '/' });
 
   if (request.method === 'GET') {
     return redirect('/login');

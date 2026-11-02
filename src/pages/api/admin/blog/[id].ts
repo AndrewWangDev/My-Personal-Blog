@@ -38,9 +38,17 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   if (!locals.user || locals.user.role !== 'admin') {
     return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
   }
+  const { id } = params;
+  if (!id) return new Response(JSON.stringify({ error: "Missing ID" }), { status: 400 });
+
   try {
     const db = env.DB;
-    await db.prepare('DELETE FROM blog_posts WHERE id = ?').bind(params.id).run();
+    // 使用 batch 原子级联清理所有关联 interactions 和 comments
+    await db.batch([
+      db.prepare("DELETE FROM interactions WHERE target_type IN ('blog_like', 'blog_bookmark') AND target_id = ?").bind(id),
+      db.prepare("DELETE FROM comments WHERE post_id = ?").bind(id),
+      db.prepare("DELETE FROM blog_posts WHERE id = ?").bind(id)
+    ]);
     return new Response(JSON.stringify({ success: true, message: '文章已删除' }), { status: 200 });
   } catch (err: any) {
     return new Response(JSON.stringify({ error: '服务器内部错误' }), { status: 500 });

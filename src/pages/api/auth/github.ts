@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 import { isOAuthBoundToAnotherUser } from '../../../utils/credentials';
-import { createSignedSession, verifySignedSession, getSessionSecret } from '../../../utils/session';
+import { createSignedSession, getSessionSecret } from '../../../utils/session';
 
 // Helper to process GitHub user profile and execute 4-step state machine
 async function processGitHubAuth(githubToken: string, currentSessionId: string | undefined, action: string | undefined, db: any, cookies: any, sessionSecret: string, verifiedUserId?: string | null) {
@@ -73,9 +73,11 @@ async function processGitHubAuth(githubToken: string, currentSessionId: string |
   }
 
   // A. 如果是已登录用户在个人中心发起【绑定 GitHub】
-  const validUserId = verifiedUserId || (currentSessionId ? (await verifySignedSession(currentSessionId, sessionSecret))?.userId : null);
-  if (action === 'bind' && validUserId) {
-    const currentUser = await db.prepare('SELECT id FROM users WHERE id = ?').bind(validUserId).first();
+  if (action === 'bind') {
+    if (!verifiedUserId) {
+      return { status: 401, data: { error: "登录已失效或受限，请重新登录" } };
+    }
+    const currentUser = await db.prepare('SELECT id FROM users WHERE id = ?').bind(verifiedUserId).first();
     if (!currentUser) {
       return { status: 401, data: { error: "登录已失效，请重新登录" } };
     }

@@ -1078,6 +1078,9 @@ const googleLang = googleLangMap[lang] || 'zh-CN';
           if (typeof credential.response.getPublicKey === 'function') {
             const spkiBuf = credential.response.getPublicKey();
             if (spkiBuf) publicKeySpki = bufferToBase64Url(spkiBuf);
+          } else {
+            customAlert(i18n.notice, '当前浏览器环境不支持标准 SPKI 通行密钥导出，请升级浏览器或使用 Chrome / Edge / Safari 等现代浏览器重试。', 'error');
+            return;
           }
 
           const verifyPayload = {

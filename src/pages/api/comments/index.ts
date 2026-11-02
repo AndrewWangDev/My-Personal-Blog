@@ -69,8 +69,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const { postId, content, parentId } = await request.json();
 
-    if (!postId || !content) {
-      return new Response(JSON.stringify({ error: "参数不完整" }), { status: 400 });
+    if (!postId || !content || typeof content !== 'string' || !content.trim()) {
+      return new Response(JSON.stringify({ error: "评论内容不能为空" }), { status: 400 });
+    }
+
+    if (content.length > 2000) {
+      return new Response(JSON.stringify({ error: "评论内容长度不能超过 2000 个字符" }), { status: 400 });
     }
 
     // TODO: 实现 KV 频率限制 (防刷)

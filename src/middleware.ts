@@ -120,7 +120,14 @@ function rateLimitJsonResponse(): Response {
   });
 }
 
-export const onRequest = defineMiddleware(async (context, next) => {
+export const onRequest = defineMiddleware(async (context, rawNext) => {
+  const next = async () => {
+    const res = await rawNext();
+    res.headers.set('X-Content-Type-Options', 'nosniff');
+    res.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return res;
+  };
   const url = new URL(context.request.url);
   const pathname = url.pathname;
 

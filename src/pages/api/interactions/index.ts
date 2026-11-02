@@ -1,14 +1,24 @@
 import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 
+const ALLOWED_TARGET_TYPES = new Set([
+  'blog_like',
+  'blog_bookmark',
+  'resource_like',
+  'resource_bookmark',
+  'news_like',
+  'news_bookmark',
+  'comment_like'
+]);
+
 export const GET: APIRoute = async ({ request, locals }) => {
   const url = new URL(request.url);
   const targetType = url.searchParams.get('target_type');
   const targetId = url.searchParams.get('target_id');
   const userId = locals.user?.id;
 
-  if (!targetType || !targetId) {
-    return new Response(JSON.stringify({ error: "missing parameters" }), { status: 400 });
+  if (!targetType || !targetId || !ALLOWED_TARGET_TYPES.has(targetType)) {
+    return new Response(JSON.stringify({ error: "无效的互动类型或缺少参数" }), { status: 400 });
   }
 
   try {
@@ -51,8 +61,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const { targetType, targetId } = await request.json();
 
-    if (!targetType || !targetId) {
-      return new Response(JSON.stringify({ error: "参数不完整" }), { status: 400 });
+    if (!targetType || !targetId || !ALLOWED_TARGET_TYPES.has(targetType)) {
+      return new Response(JSON.stringify({ error: "无效的互动类型或参数不完整" }), { status: 400 });
     }
 
     const db = env.DB;
