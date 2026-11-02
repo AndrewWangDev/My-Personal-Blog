@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { env } from "cloudflare:workers";
 
 const ALLOWED_TARGET_TYPES = new Set([
+  'post_like',
+  'post_bookmark',
   'blog_like',
   'blog_bookmark',
   'resource_like',

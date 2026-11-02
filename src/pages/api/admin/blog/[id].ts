@@ -45,8 +45,8 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     const db = env.DB;
     // 使用 batch 原子级联清理所有关联 interactions 和 comments
     await db.batch([
-      db.prepare("DELETE FROM interactions WHERE target_type IN ('blog_like', 'blog_bookmark') AND target_id = ?").bind(id),
-      db.prepare("DELETE FROM comments WHERE post_id = ?").bind(id),
+      db.prepare("DELETE FROM interactions WHERE target_type IN ('post_like', 'post_bookmark', 'blog_like', 'blog_bookmark') AND target_id = ?").bind(`blog_${id}`),
+      db.prepare("DELETE FROM comments WHERE post_id = ?").bind(`blog_${id}`),
       db.prepare("DELETE FROM blog_posts WHERE id = ?").bind(id)
     ]);
     return new Response(JSON.stringify({ success: true, message: '文章已删除' }), { status: 200 });
