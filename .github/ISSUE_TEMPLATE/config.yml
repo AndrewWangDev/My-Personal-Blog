@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🛡️ Report a Security Vulnerability
+    url: https://github.com/AndrewWangDev/My-Personal-Blog/security/advisories/new
+    about: Please report security vulnerabilities privately here instead of opening a public issue.
+  - name: 💬 Ask a Question or Discuss Architecture
+    url: https://github.com/AndrewWangDev/My-Personal-Blog/discussions
+    about: Join the community to ask questions, share feedback, or discuss full-stack edge ideas.

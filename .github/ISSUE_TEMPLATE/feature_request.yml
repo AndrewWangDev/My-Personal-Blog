@@ -1,0 +1,48 @@
+name: 💡 Feature Proposal
+description: Suggest an idea, architectural enhancement, or algorithmic improvement
+title: "[Feature]: "
+labels: ["enhancement", "needs-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for proposing an enhancement! Great suggestions help evolve this edge-native architecture.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Motivation
+      description: Is your feature request related to a specific limitation or pain point?
+      placeholder: I'm always frustrated when... / The current architecture could benefit from...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution / Architectural Design
+      description: Describe your proposed solution and how it fits into the Cloudflare Workers / Astro ecosystem.
+      placeholder: A clear and concise description of what you want to happen...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or workarounds you have considered.
+      placeholder: I considered using X, but Y seems better because...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Willingness to Submit a Pull Request
+      description: Are you interested in contributing code to implement this feature?
+      options:
+        - "Yes, I would love to work on this and submit a PR!"
+        - "I can help with testing or design, but not full implementation."
+        - "No, I am just sharing the idea for maintainers/community."
+    validations:
+      required: true
