@@ -32,10 +32,13 @@ const htmlLang = langMap[lang] || 'en-US';
 
 // Default SEO values
 const finalDesc = description || t['seo.home.desc'];
-const finalOgImage = ogImage ? new URL(ogImage, Astro.url).toString() : new URL('/fallback.png', Astro.url).toString();
+const defaultOgPath = '/og-card-2026.png';
+const finalOgImage = ogImage ? new URL(ogImage, Astro.site || Astro.url).toString() : new URL(defaultOgPath, Astro.site || Astro.url).toString();
 
 // Canonical URL (always points to primary domain defined in astro.config.mjs)
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).toString();
+// Social URL: preserves search query parameters so cache-busting (?v=3) forces social crawlers to refresh
+const socialURL = Astro.url.search ? new URL(Astro.url.pathname + Astro.url.search, Astro.site).toString() : canonicalURL;
 
 // Beta domain / Worker domain blocking logic
 const isBeta = Astro.url.hostname.includes('beta.andrewwangdev.com') || Astro.url.hostname.includes('workers.dev');
@@ -95,17 +98,18 @@ const isNoindexPage = noindexPaths.some(p => Astro.url.pathname.startsWith(p));
 
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:url" content={socialURL} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={finalDesc} />
 		<meta property="og:image" content={finalOgImage} />
+		<meta property="og:image:secure_url" content={finalOgImage} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 		<meta property="og:image:type" content="image/png" />
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:url" content={canonicalURL} />
+		<meta name="twitter:url" content={socialURL} />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={finalDesc} />
 		<meta name="twitter:image" content={finalOgImage} />
